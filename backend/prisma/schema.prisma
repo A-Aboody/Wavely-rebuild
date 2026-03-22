@@ -1,0 +1,258 @@
+// Prisma Schema for Wavely
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  username      String   @unique
+  displayName   String
+  password      String?  // Nullable for OAuth users
+  bio           String?
+  profileImage  String?
+  bannerImage   String?
+
+  // Email Verification
+  emailVerified              Boolean   @default(false)
+  emailVerificationCode      String?
+  emailVerificationExpires   DateTime?
+
+  // Password Reset
+  passwordResetToken         String?
+  passwordResetExpires       DateTime?
+
+  // Account Security
+  failedLoginAttempts        Int       @default(0)
+  lockedUntil                DateTime?
+
+  // OAuth
+  provider                   AuthProvider @default(LOCAL)
+  providerId                 String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastLogin     DateTime?
+
+  // Relationships
+  waves         Wave[]
+  comments      Comment[]
+  likes         Like[]
+  saves         Save[]
+  ratings       Rating[]
+
+  // Social relationships
+  followers     Follow[]  @relation("UserFollowers")
+  following     Follow[]  @relation("UserFollowing")
+
+  // Notifications
+  notifications Notification[] @relation("NotificationReceiver")
+
+  @@index([username])
+  @@index([email])
+  @@index([emailVerificationCode])
+  @@index([passwordResetToken])
+}
+
+model Wave {
+  id              String   @id @default(uuid())
+  title           String?
+  content         String?
+  category        String?
+  location        String?
+  
+  // Wave types: 'personal' or 'community'
+  waveType        WaveType @default(PERSONAL)
+  
+  // Media
+  mediaType       MediaType?
+  mediaUrls       String[]
+  thumbnailUrl    String?
+  
+  // Personal rating (for personal waves)
+  personalRating  Float?
+  
+  // Community rating system (for community waves)
+  communityRatingScale Int? // 5 or 10
+  averageRating   Float?
+  
+  // Engagement metrics
+  likesCount      Int      @default(0)
+  commentsCount   Int      @default(0)
+  savesCount      Int      @default(0)
+  viewsCount      Int      @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relationships
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  comments        Comment[]
+  likes           Like[]
+  saves           Save[]
+  ratings         Rating[]
+  
+  @@index([userId])
+  @@index([waveType])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model Comment {
+  id              String   @id @default(uuid())
+  content         String
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relationships
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  waveId          String
+  wave            Wave     @relation(fields: [waveId], references: [id], onDelete: Cascade)
+  
+  // For nested replies
+  parentCommentId String?
+  parentComment   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  replies         Comment[] @relation("CommentReplies")
+  
+  // Engagement
+  likes           CommentLike[]
+  likesCount      Int      @default(0)
+  
+  @@index([waveId])
+  @@index([userId])
+  @@index([parentCommentId])
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  waveId    String
+  wave      Wave     @relation(fields: [waveId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, waveId])
+  @@index([userId])
+  @@index([waveId])
+}
+
+model CommentLike {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  
+  userId    String
+  
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, commentId])
+  @@index([userId])
+  @@index([commentId])
+}
+
+model Save {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  waveId    String
+  wave      Wave     @relation(fields: [waveId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, waveId])
+  @@index([userId])
+  @@index([waveId])
+}
+
+model Rating {
+  id        String   @id @default(uuid())
+  rating    Float    // The actual rating value (1-5 or 1-10)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  waveId    String
+  wave      Wave     @relation(fields: [waveId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, waveId])
+  @@index([userId])
+  @@index([waveId])
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  
+  followerId  String
+  follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  
+  followingId String
+  following   User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+  
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  type      NotificationType
+  content   String
+  read      Boolean          @default(false)
+  
+  // Reference data (JSON for flexibility)
+  referenceId   String?
+  referenceType String?
+  
+  createdAt DateTime @default(now())
+  
+  userId    String
+  user      User     @relation("NotificationReceiver", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, read])
+  @@index([createdAt])
+}
+
+// Enums
+enum WaveType {
+  PERSONAL
+  COMMUNITY
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOW
+  RATING
+  MENTION
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  FACEBOOK
+  TWITTER
+}
