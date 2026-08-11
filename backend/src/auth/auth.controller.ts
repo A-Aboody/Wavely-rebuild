@@ -8,6 +8,7 @@ import {
   Get,
   Req,
   Res,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, AuthResponse } from '../types';
@@ -99,12 +100,29 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
-    const authResponse = await this.authService.googleLogin(req.user);
-
-    // Redirect to frontend with tokens in URL (will be handled by frontend)
+    const result = await this.authService.googleLogin(req.user);
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const redirectUrl = `${frontendUrl}/auth/callback?accessToken=${authResponse.accessToken}&refreshToken=${authResponse.refreshToken}`;
 
+    if ('needsSetup' in result && result.needsSetup) {
+      const redirectUrl = `${frontendUrl}/auth/complete-profile?setupToken=${result.setupToken}&email=${encodeURIComponent(result.email)}&displayName=${encodeURIComponent(result.displayName)}`;
+      return res.redirect(redirectUrl);
+    }
+
+    const authResult = result as AuthResponse;
+    const redirectUrl = `${frontendUrl}/auth/callback?accessToken=${authResult.accessToken}&refreshToken=${authResult.refreshToken}`;
     res.redirect(redirectUrl);
+  }
+
+  @Post('google/complete')
+  @HttpCode(HttpStatus.OK)
+  async completeGoogleSignup(
+    @Body('setupToken') setupToken: string,
+    @Body('username') username: string,
+    @Body('displayName') displayName?: string,
+  ): Promise<AuthResponse> {
+    if (!setupToken || !username) {
+      throw new BadRequestException('setupToken and username are required');
+    }
+    return this.authService.completeGoogleSignup(setupToken, username, displayName);
   }
 }

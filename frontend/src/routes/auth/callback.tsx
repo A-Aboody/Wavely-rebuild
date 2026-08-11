@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { useAuthStore } from '../../stores/authStore';
+import { authApi } from '../../api/auth.api';
 
 export const Route = createFileRoute('/auth/callback')({
   component: OAuthCallback,
@@ -9,34 +10,44 @@ export const Route = createFileRoute('/auth/callback')({
 function OAuthCallback() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const setUser = useAuthStore((state) => state.setUser);
 
   useEffect(() => {
-    // Get tokens from URL query parameters
-    const params = new URLSearchParams(window.location.search);
-    const accessToken = params.get('accessToken');
-    const refreshToken = params.get('refreshToken');
+    const handleCallback = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const accessToken = params.get('accessToken');
+      const refreshToken = params.get('refreshToken');
 
-    if (accessToken && refreshToken) {
-      // Store tokens in auth store
-      setAuth({
-        accessToken,
-        refreshToken,
-        user: null as any, // User data will be fetched by the app
-      });
+      if (accessToken && refreshToken) {
+        // Store tokens first so apiClient can use them
+        useAuthStore.setState({
+          accessToken,
+          refreshToken,
+          isAuthenticated: true,
+        });
 
-      // Redirect to dashboard
-      navigate({ to: '/dashboard' });
-    } else {
-      // If no tokens, redirect to login with error
-      navigate({ to: '/auth/login' });
-    }
-  }, [navigate, setAuth]);
+        try {
+          // Fetch the full user profile from the API
+          const user = await authApi.getCurrentUser();
+          setUser(user);
+        } catch (error) {
+          console.error('Failed to fetch user profile:', error);
+        }
+
+        navigate({ to: '/home' });
+      } else {
+        navigate({ to: '/auth/login' });
+      }
+    };
+
+    handleCallback();
+  }, [navigate, setAuth, setUser]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white mx-auto mb-4"></div>
-        <p className="text-white text-lg">Completing sign in...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Completing sign in...</p>
       </div>
     </div>
   );

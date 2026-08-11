@@ -1,11 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Wave } from '@wavely/shared';
-import { Heart, MessageCircle, Bookmark, Share2, MoreHorizontal, Star, MapPin } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Share2, MoreHorizontal, Star, MapPin, Volume2, VolumeX } from 'lucide-react';
 import { useLikeWave, useSaveWave, useIncrementView } from '../hooks/useWaves';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuthStore } from '../stores/authStore';
 import { useInView } from 'react-intersection-observer';
+import { cn } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 interface WaveCardProps {
   wave: Wave;
@@ -18,19 +24,17 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
   const likeMutation = useLikeWave();
   const saveMutation = useSaveWave();
   const incrementViewMutation = useIncrementView();
-  
+
   const [showFullContent, setShowFullContent] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isVideoMuted, setIsVideoMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Intersection observer for video autoplay
   const { ref: inViewRef, inView } = useInView({
     threshold: 0.6,
     rootMargin: '0px 0px -50px 0px',
   });
 
-  // Handle video autoplay
   useEffect(() => {
     if (!videoRef.current || wave.mediaType !== 'VIDEO') return;
 
@@ -49,7 +53,6 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
     }
   }, [inView, wave.mediaType]);
 
-  // Track view
   useEffect(() => {
     if (inView) {
       incrementViewMutation.mutate(wave.id);
@@ -59,11 +62,7 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
   const handleLike = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!user) {
-      // Redirect to login or show toast
-      return;
-    }
-
+    if (!user) return;
     likeMutation.mutate(wave.id);
   };
 
@@ -71,13 +70,11 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
     e.preventDefault();
     e.stopPropagation();
     if (!user) return;
-
     saveMutation.mutate(wave.id);
   };
 
   const toggleVideo = () => {
     if (!videoRef.current) return;
-    
     if (isVideoPlaying) {
       videoRef.current.pause();
     } else {
@@ -89,7 +86,6 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!videoRef.current) return;
-    
     const newMuted = !isVideoMuted;
     videoRef.current.muted = newMuted;
     setIsVideoMuted(newMuted);
@@ -107,11 +103,18 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
     }
   };
 
+  const userInitials = wave.user.displayName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
-    <div
+    <Card
       ref={inViewRef}
       onClick={handleCardClick}
-      className="w-full bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+      className="w-full overflow-hidden border border-border transition-colors hover:border-primary/20 cursor-pointer shadow-none"
     >
       {/* Media Content */}
       {wave.mediaUrls.length > 0 && (
@@ -151,24 +154,26 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
           {/* Header overlay */}
           <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/60 to-transparent p-4">
             <div className="flex items-center justify-between">
-              <Link 
-                to="/profile/$username" 
+              <Link
+                to="/profile/$username"
                 params={{ username: wave.user.username }}
                 className="flex items-center gap-2"
                 onClick={(e) => e.stopPropagation()}
               >
-                <img
-                  src={wave.user.profileImage || '/default-avatar.png'}
-                  alt={wave.user.displayName}
-                  className="w-10 h-10 rounded-full border-2 border-white"
-                />
+                <Avatar className="h-10 w-10 border-2 border-white">
+                  <AvatarImage
+                    src={wave.user.profileImage || '/default-avatar.png'}
+                    alt={wave.user.displayName}
+                  />
+                  <AvatarFallback>{userInitials}</AvatarFallback>
+                </Avatar>
                 <div>
                   <p className="font-semibold text-white text-sm">
                     {wave.user.displayName}
                   </p>
                   <div className="flex items-center gap-1 text-xs text-gray-300">
                     <span>@{wave.user.username}</span>
-                    <span>•</span>
+                    <span>·</span>
                     <span>{formatTimestamp(wave.createdAt)}</span>
                   </div>
                 </div>
@@ -176,18 +181,20 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
 
               <div className="flex items-center gap-2">
                 {wave.location && (
-                  <div className="flex items-center gap-1 text-white text-xs bg-black/30 px-2 py-1 rounded-full">
-                    <MapPin size={12} />
-                    <span>{wave.location}</span>
-                  </div>
+                  <Badge variant="secondary" className="bg-black/30 text-white border-none text-xs">
+                    <MapPin className="mr-1 h-3 w-3" />
+                    {wave.location}
+                  </Badge>
                 )}
                 {isOwner && (
-                  <button 
-                    className="text-white p-2 rounded-full hover:bg-white/20"
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:bg-white/20 h-9 w-9"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <MoreHorizontal size={20} />
-                  </button>
+                    <MoreHorizontal className="h-5 w-5" />
+                  </Button>
                 )}
               </div>
             </div>
@@ -197,9 +204,9 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
           {(wave.personalRating || wave.averageRating) && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
               <div className="bg-purple-500/90 backdrop-blur-sm text-white px-4 py-2 rounded-full flex items-center gap-2">
-                <Star size={16} fill="currentColor" />
+                <Star className="h-4 w-4" fill="currentColor" />
                 <span className="font-semibold">
-                  {wave.waveType === 'PERSONAL' 
+                  {wave.waveType === 'PERSONAL'
                     ? `${wave.personalRating?.toFixed(1)}/10`
                     : `${wave.averageRating?.toFixed(1)}/${wave.communityRatingScale}`
                   }
@@ -211,114 +218,130 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
           {/* Video controls */}
           {wave.mediaType === 'VIDEO' && (
             <div className="absolute bottom-4 left-4 z-10">
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={toggleMute}
-                className="bg-black/60 text-white p-2 rounded-full hover:bg-black/80"
+                className="bg-black/60 text-white hover:bg-black/80 h-9 w-9 rounded-full"
               >
-                {isVideoMuted ? '🔇' : '🔊'}
-              </button>
+                {isVideoMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+              </Button>
             </div>
           )}
         </div>
       )}
 
       {/* Content Section */}
-      <div className="p-4">
-        {/* Title and content */}
+      <CardContent className="p-4">
         {wave.title && (
-          <h3 className="font-bold text-lg mb-2">{wave.title}</h3>
+          <h3 className="font-semibold text-lg text-foreground mb-2">{wave.title}</h3>
         )}
 
         {wave.content && (
           <div className="relative">
-            <p className={`text-gray-700 dark:text-gray-300 ${!showFullContent ? 'line-clamp-2' : ''}`}>
+            <p className={cn(
+              'text-muted-foreground',
+              !showFullContent && 'line-clamp-2'
+            )}>
               {wave.content}
             </p>
             {wave.content.length > 100 && (
-              <button
+              <Button
+                variant="link"
+                className="h-auto p-0 text-sm font-medium mt-1"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowFullContent(!showFullContent);
                 }}
-                className="text-blue-500 text-sm font-medium mt-1"
               >
                 {showFullContent ? 'Show less' : 'Read more'}
-              </button>
+              </Button>
             )}
           </div>
         )}
 
         {/* Action buttons */}
-        <div className="flex items-center justify-between mt-4 pt-4 border-t dark:border-gray-700">
-          <div className="flex items-center gap-4">
-            <button
+        <Separator className="mt-4 mb-4" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleLike}
-              className={`flex items-center gap-1 transition-colors ${
+              className={cn(
+                'h-9 w-9 transition-colors',
                 wave.isLiked
-                  ? 'text-red-500'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-red-500'
-              }`}
+                  ? 'text-red-500 hover:text-red-600'
+                  : 'text-muted-foreground hover:text-red-500'
+              )}
             >
-              <Heart 
-                size={20} 
-                fill={wave.isLiked ? 'currentColor' : 'none'} 
+              <Heart
+                className="h-5 w-5"
+                fill={wave.isLiked ? 'currentColor' : 'none'}
                 stroke="currentColor"
                 strokeWidth={wave.isLiked ? 0 : 2}
               />
-              <span className="text-sm">{wave.likesCount}</span>
-            </button>
+            </Button>
+            <span className="text-sm text-muted-foreground mr-2">{wave.likesCount}</span>
 
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 onCommentsClick?.(wave.id);
               }}
-              className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
+              className="h-9 w-9 text-muted-foreground hover:text-primary transition-colors"
             >
-              <MessageCircle size={20} />
-              <span className="text-sm">{wave.commentsCount}</span>
-            </button>
+              <MessageCircle className="h-5 w-5" />
+            </Button>
+            <span className="text-sm text-muted-foreground mr-2">{wave.commentsCount}</span>
 
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={(e) => e.stopPropagation()}
-              className="text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
+              className="h-9 w-9 text-muted-foreground hover:text-primary transition-colors"
             >
-              <Share2 size={20} />
-            </button>
+              <Share2 className="h-5 w-5" />
+            </Button>
           </div>
 
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handleSave}
-            className={`transition-colors ${
+            className={cn(
+              'h-9 w-9 transition-colors',
               wave.isSaved
-                ? 'text-blue-500'
-                : 'text-gray-600 dark:text-gray-400 hover:text-blue-500'
-            }`}
+                ? 'text-primary hover:text-primary/80'
+                : 'text-muted-foreground hover:text-primary'
+            )}
           >
-            <Bookmark 
-              size={20} 
-              fill={wave.isSaved ? 'currentColor' : 'none'} 
+            <Bookmark
+              className="h-5 w-5"
+              fill={wave.isSaved ? 'currentColor' : 'none'}
               stroke="currentColor"
               strokeWidth={wave.isSaved ? 0 : 2}
             />
-          </button>
+          </Button>
         </div>
 
         {/* Meta info */}
-        <div className="flex items-center gap-2 mt-2 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
           <span>{wave.likesCount} likes</span>
-          <span>•</span>
+          <span>·</span>
           <span>{wave.commentsCount} comments</span>
           {wave.category && (
             <>
-              <span>•</span>
-              <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full">
+              <span>·</span>
+              <Badge variant="secondary" className="text-xs">
                 #{wave.category}
-              </span>
+              </Badge>
             </>
           )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

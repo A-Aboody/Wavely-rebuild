@@ -41,4 +41,13 @@ export const authApi = {
     );
     return response.data;
   },
+
+  completeGoogleSignup: async (data: {
+    setupToken: string;
+    username: string;
+    displayName?: string;
+  }): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/auth/google/complete', data);
+    return response.data;
+  },
 };

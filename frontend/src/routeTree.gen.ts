@@ -10,23 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as HomeRouteImport } from './routes/home'
-import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CreateRouteImport } from './routes/create'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileUsernameRouteImport } from './routes/profile/$username'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as AuthCompleteProfileRouteImport } from './routes/auth/complete-profile'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CreateRoute = CreateRouteImport.update({
@@ -59,6 +54,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AuthRoute,
 } as any)
+const AuthCompleteProfileRoute = AuthCompleteProfileRouteImport.update({
+  id: '/complete-profile',
+  path: '/complete-profile',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
@@ -69,9 +69,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/create': typeof CreateRoute
-  '/dashboard': typeof DashboardRoute
   '/home': typeof HomeRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/complete-profile': typeof AuthCompleteProfileRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/profile/$username': typeof ProfileUsernameRoute
@@ -80,9 +80,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/create': typeof CreateRoute
-  '/dashboard': typeof DashboardRoute
   '/home': typeof HomeRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/complete-profile': typeof AuthCompleteProfileRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/profile/$username': typeof ProfileUsernameRoute
@@ -92,9 +92,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/create': typeof CreateRoute
-  '/dashboard': typeof DashboardRoute
   '/home': typeof HomeRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/complete-profile': typeof AuthCompleteProfileRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/profile/$username': typeof ProfileUsernameRoute
@@ -105,9 +105,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/create'
-    | '/dashboard'
     | '/home'
     | '/auth/callback'
+    | '/auth/complete-profile'
     | '/auth/login'
     | '/auth/register'
     | '/profile/$username'
@@ -116,9 +116,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/create'
-    | '/dashboard'
     | '/home'
     | '/auth/callback'
+    | '/auth/complete-profile'
     | '/auth/login'
     | '/auth/register'
     | '/profile/$username'
@@ -127,9 +127,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/create'
-    | '/dashboard'
     | '/home'
     | '/auth/callback'
+    | '/auth/complete-profile'
     | '/auth/login'
     | '/auth/register'
     | '/profile/$username'
@@ -139,7 +139,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
   CreateRoute: typeof CreateRoute
-  DashboardRoute: typeof DashboardRoute
   HomeRoute: typeof HomeRoute
   ProfileUsernameRoute: typeof ProfileUsernameRoute
 }
@@ -151,13 +150,6 @@ declare module '@tanstack/react-router' {
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/create': {
@@ -202,6 +194,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/auth/complete-profile': {
+      id: '/auth/complete-profile'
+      path: '/complete-profile'
+      fullPath: '/auth/complete-profile'
+      preLoaderRoute: typeof AuthCompleteProfileRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/auth/callback': {
       id: '/auth/callback'
       path: '/callback'
@@ -214,12 +213,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
+  AuthCompleteProfileRoute: typeof AuthCompleteProfileRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
   AuthCallbackRoute: AuthCallbackRoute,
+  AuthCompleteProfileRoute: AuthCompleteProfileRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
 }
@@ -230,7 +231,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
   CreateRoute: CreateRoute,
-  DashboardRoute: DashboardRoute,
   HomeRoute: HomeRoute,
   ProfileUsernameRoute: ProfileUsernameRoute,
 }

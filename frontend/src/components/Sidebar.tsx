@@ -7,11 +7,20 @@ import {
   PlusSquare,
   User,
   LogOut,
-  Menu,
-  X,
+  PanelLeftClose,
+  PanelLeft,
   Camera,
 } from 'lucide-react';
 import apiClient from '../lib/apiClient';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip';
 
 export const Sidebar = () => {
   const { user, isAuthenticated, updateUser } = useAuthStore();
@@ -53,7 +62,7 @@ export const Sidebar = () => {
       const imageUrl = uploadResponse.data.data.url;
 
       // Update user profile
-      const updateResponse = await apiClient.put('/users/me', {
+      await apiClient.put('/users/me', {
         profileImage: imageUrl,
       });
 
@@ -77,173 +86,200 @@ export const Sidebar = () => {
     );
   }
 
+  const navItems = [
+    { to: '/home' as const, label: 'Home', icon: Home },
+    { to: '/create' as const, label: 'Create', icon: PlusSquare },
+  ];
+
+  const profileImageUrl = user.profileImage ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      user.displayName || user.username
+    )}&background=3b82f6&color=fff&size=128`;
+
+  const userInitials = (user.displayName || user.username)
+    .split(' ')
+    .map((n: string) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
-    <aside
-      className={`fixed left-0 top-0 h-screen bg-white border-r border-gray-200 transition-all duration-300 z-50 flex flex-col ${
-        isCollapsed ? 'w-20' : 'w-64'
-      }`}
-    >
-      {/* User Profile Section */}
-      <div className="border-b border-gray-200 p-4">
-        {/* Toggle Button - moved above profile picture */}
-        <div className="flex justify-center mb-3">
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="bg-blue-500 text-white rounded-full p-1.5 hover:bg-blue-600 transition-colors shadow-lg flex-shrink-0"
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {isCollapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
-          </button>
-        </div>
-
-        <div className="flex flex-col items-center">
-          <div className="relative group flex-shrink-0 w-12 h-12">
-            <img
-              src={
-                user.profileImage ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  user.displayName || user.username
-                )}&background=3b82f6&color=fff&size=128`
-              }
-              alt={user.displayName}
-              className="w-12 h-12 rounded-full object-cover ring-2 ring-blue-100 cursor-pointer flex-shrink-0"
-              onClick={handleImageClick}
-            />
-            <div
-              onClick={handleImageClick}
-              className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+    <TooltipProvider delayDuration={0}>
+      <aside
+        className={cn(
+          'fixed left-0 top-0 h-screen bg-background border-r border-border transition-all duration-300 z-50 flex flex-col',
+          isCollapsed ? 'w-20' : 'w-64'
+        )}
+      >
+        {/* User Profile Section */}
+        <div className="border-b border-border p-4">
+          {/* Toggle Button */}
+          <div className="flex justify-center mb-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              className="h-8 w-8 text-muted-foreground"
             >
-              {isUploadingImage ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Camera className="w-5 h-5 text-white" />
-              )}
-            </div>
+              {isCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+            </Button>
           </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
-          {!isCollapsed && (
-            <>
-              <p className="font-semibold text-gray-900 mt-4 text-center truncate w-full px-2 text-sm">
-                {user.displayName}
-              </p>
-              <p className="text-xs text-gray-500 truncate w-full text-center px-2 mt-1">
-                @{user.username}
-              </p>
-            </>
+
+          <div className="flex flex-col items-center">
+            <div className="relative group flex-shrink-0">
+              <Avatar className="h-12 w-12 cursor-pointer ring-2 ring-primary/10" onClick={handleImageClick}>
+                <AvatarImage
+                  src={profileImageUrl}
+                  alt={user.displayName}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+              <div
+                onClick={handleImageClick}
+                className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                {isUploadingImage ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Camera className="w-5 h-5 text-white" />
+                )}
+              </div>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            {!isCollapsed && (
+              <>
+                <p className="font-semibold text-foreground mt-4 text-center truncate w-full px-2 text-sm">
+                  {user.displayName}
+                </p>
+                <p className="text-xs text-muted-foreground truncate w-full text-center px-2 mt-1">
+                  @{user.username}
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Navigation Links */}
+        <nav className="flex-1 p-3 space-y-1">
+          {navItems.map((item) => (
+            <Link key={item.to} to={item.to} activeOptions={{ exact: false }}>
+              {({ isActive }) => {
+                const linkContent = (
+                  <div
+                    className={cn(
+                      'flex items-center rounded-md px-3 py-2.5 transition-colors cursor-pointer',
+                      isCollapsed ? 'justify-center' : 'gap-3',
+                      isActive
+                        ? 'bg-accent text-accent-foreground'
+                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    )}
+                  >
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    {!isCollapsed && (
+                      <span className="font-medium text-sm">{item.label}</span>
+                    )}
+                  </div>
+                );
+
+                if (isCollapsed) {
+                  return (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        {linkContent}
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        {item.label}
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                }
+
+                return linkContent;
+              }}
+            </Link>
+          ))}
+
+          <Link
+            to="/profile/$username"
+            params={{ username: user.username }}
+            activeOptions={{ exact: false }}
+          >
+            {({ isActive }) => {
+              const linkContent = (
+                <div
+                  className={cn(
+                    'flex items-center rounded-md px-3 py-2.5 transition-colors cursor-pointer',
+                    isCollapsed ? 'justify-center' : 'gap-3',
+                    isActive
+                      ? 'bg-accent text-accent-foreground'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                  )}
+                >
+                  <User className="h-5 w-5 flex-shrink-0" />
+                  {!isCollapsed && (
+                    <span className="font-medium text-sm">Profile</span>
+                  )}
+                </div>
+              );
+
+              if (isCollapsed) {
+                return (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {linkContent}
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      Profile
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+
+              return linkContent;
+            }}
+          </Link>
+        </nav>
+
+        {/* Logout Button at Bottom */}
+        <div className="p-3 border-t border-border">
+          {isCollapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleLogout}
+                  className="w-full h-10 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Log out
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <Button
+              variant="ghost"
+              onClick={handleLogout}
+              className="w-full justify-start gap-3 px-3 py-2.5 h-auto text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="h-5 w-5 flex-shrink-0" />
+              <span className="font-medium text-sm">Log out</span>
+            </Button>
           )}
         </div>
-      </div>
-
-      {/* Navigation Links */}
-      <nav className="flex-1 p-4 space-y-2">
-        <Link to="/home" activeOptions={{ exact: false }}>
-          {({ isActive }) => (
-            <div
-              className={`flex items-center ${
-                isCollapsed ? 'justify-center' : 'gap-3'
-              } px-4 py-3 rounded-lg transition-colors cursor-pointer ${
-                isActive ? 'bg-blue-50' : 'hover:bg-blue-50'
-              }`}
-            >
-              <Home
-                className={`w-5 h-5 flex-shrink-0 ${
-                  isActive ? 'text-blue-600' : 'text-gray-600'
-                }`}
-              />
-              {!isCollapsed && (
-                <span
-                  className={`font-medium ${
-                    isActive ? 'text-blue-600' : 'text-gray-700'
-                  }`}
-                >
-                  Home
-                </span>
-              )}
-            </div>
-          )}
-        </Link>
-
-        <Link to="/create" activeOptions={{ exact: false }}>
-          {({ isActive }) => (
-            <div
-              className={`flex items-center ${
-                isCollapsed ? 'justify-center' : 'gap-3'
-              } px-4 py-3 rounded-lg transition-colors cursor-pointer ${
-                isActive ? 'bg-blue-50' : 'hover:bg-blue-50'
-              }`}
-            >
-              <PlusSquare
-                className={`w-5 h-5 flex-shrink-0 ${
-                  isActive ? 'text-blue-600' : 'text-gray-600'
-                }`}
-              />
-              {!isCollapsed && (
-                <span
-                  className={`font-medium ${
-                    isActive ? 'text-blue-600' : 'text-gray-700'
-                  }`}
-                >
-                  Create
-                </span>
-              )}
-            </div>
-          )}
-        </Link>
-
-        <Link
-          to="/profile/$username"
-          params={{ username: user.username }}
-          activeOptions={{ exact: false }}
-        >
-          {({ isActive }) => (
-            <div
-              className={`flex items-center ${
-                isCollapsed ? 'justify-center' : 'gap-3'
-              } px-4 py-3 rounded-lg transition-colors cursor-pointer ${
-                isActive ? 'bg-blue-50' : 'hover:bg-blue-50'
-              }`}
-            >
-              <User
-                className={`w-5 h-5 flex-shrink-0 ${
-                  isActive ? 'text-blue-600' : 'text-gray-600'
-                }`}
-              />
-              {!isCollapsed && (
-                <span
-                  className={`font-medium ${
-                    isActive ? 'text-blue-600' : 'text-gray-700'
-                  }`}
-                >
-                  Profile
-                </span>
-              )}
-            </div>
-          )}
-        </Link>
-      </nav>
-
-      {/* Logout Button at Bottom */}
-      <div className="p-4 border-t border-gray-200">
-        <button
-          onClick={handleLogout}
-          className={`flex items-center ${
-            isCollapsed ? 'justify-center' : 'gap-3'
-          } px-4 py-3 rounded-lg hover:bg-red-50 transition-colors group w-full`}
-        >
-          <LogOut className="w-5 h-5 flex-shrink-0 text-gray-600 group-hover:text-red-600" />
-          {!isCollapsed && (
-            <span className="font-medium text-gray-700 group-hover:text-red-600">
-              Logout
-            </span>
-          )}
-        </button>
-      </div>
-    </aside>
+      </aside>
+    </TooltipProvider>
   );
 };

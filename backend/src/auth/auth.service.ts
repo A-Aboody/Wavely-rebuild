@@ -346,9 +346,11 @@ export class AuthService {
     return { message: 'Password reset successfully' };
   }
 
-  async googleLogin(googleUser: any): Promise<AuthResponse> {
+  async googleLogin(
+    googleUser: any,
+  ): Promise<AuthResponse | { needsSetup: true; setupToken: string; email: string; displayName: string }> {
     // Check if user exists with this Google ID
-    let user = await this.prisma.user.findFirst({
+    const user = await this.prisma.user.findFirst({
       where: {
         provider: 'GOOGLE',
         providerId: googleUser.providerId,
@@ -356,7 +358,7 @@ export class AuthService {
     });
 
     if (!user) {
-      // Check if email already exists
+      // Check if email already exists with a different provider
       const existingUser = await this.prisma.user.findUnique({
         where: { email: googleUser.email },
       });
@@ -365,44 +367,87 @@ export class AuthService {
         throw new ConflictException('Email already in use with a different login method');
       }
 
-      // Generate unique username from email
-      let baseUsername = googleUser.email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
-      let username = baseUsername;
-      let counter = 1;
+      // New Google user — store their data temporarily and ask them to pick a username
+      const setupToken = crypto.randomBytes(32).toString('hex');
+      const googleData = {
+        email: googleUser.email,
+        displayName: googleUser.displayName,
+        profileImage: googleUser.profileImage,
+        providerId: googleUser.providerId,
+      };
+      await this.redisService.set(
+        `google_setup:${setupToken}`,
+        JSON.stringify(googleData),
+        600, // 10 minutes
+      );
 
-      // Ensure username is unique
-      while (await this.prisma.user.findUnique({ where: { username } })) {
-        username = `${baseUsername}${counter}`;
-        counter++;
-      }
+      return {
+        needsSetup: true,
+        setupToken,
+        email: googleUser.email,
+        displayName: googleUser.displayName || '',
+      };
+    }
 
-      // Create new user from Google profile
-      user = await this.prisma.user.create({
-        data: {
-          email: googleUser.email,
-          username: username,
-          displayName: googleUser.displayName,
-          profileImage: googleUser.profileImage,
-          provider: 'GOOGLE',
-          providerId: googleUser.providerId,
-          emailVerified: true, // Google accounts are pre-verified
-          password: null, // No password for OAuth users
-          lastLogin: new Date(),
-        },
-      });
+    // Existing user — update last login and return tokens
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() },
+    });
 
-      // Send welcome email
-      try {
-        await this.emailService.sendWelcomeEmail(user.email, user.username);
-      } catch (error) {
-        console.error('Failed to send welcome email:', error);
-      }
-    } else {
-      // Update last login
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { lastLogin: new Date() },
-      });
+    const tokens = await this.generateTokens(user.id, user.email);
+    await this.storeRefreshToken(user.id, tokens.refreshToken);
+
+    return {
+      user: this.sanitizeUser(user),
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    };
+  }
+
+  async completeGoogleSignup(
+    setupToken: string,
+    username: string,
+    displayName?: string,
+  ): Promise<AuthResponse> {
+    const googleDataStr = await this.redisService.get(`google_setup:${setupToken}`);
+    if (!googleDataStr) {
+      throw new BadRequestException('Setup session expired. Please sign in with Google again.');
+    }
+
+    const googleData = JSON.parse(googleDataStr);
+
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+      throw new BadRequestException(
+        'Username must be 3-20 characters and contain only letters, numbers, and underscores',
+      );
+    }
+
+    const existingUsername = await this.prisma.user.findUnique({ where: { username } });
+    if (existingUsername) {
+      throw new ConflictException('Username already taken');
+    }
+
+    const user = await this.prisma.user.create({
+      data: {
+        email: googleData.email,
+        username,
+        displayName: displayName || googleData.displayName || username,
+        profileImage: googleData.profileImage,
+        provider: 'GOOGLE',
+        providerId: googleData.providerId,
+        emailVerified: true,
+        password: null,
+        lastLogin: new Date(),
+      },
+    });
+
+    await this.redisService.del(`google_setup:${setupToken}`);
+
+    try {
+      await this.emailService.sendWelcomeEmail(user.email, user.username);
+    } catch (error) {
+      console.error('Failed to send welcome email:', error);
     }
 
     const tokens = await this.generateTokens(user.id, user.email);

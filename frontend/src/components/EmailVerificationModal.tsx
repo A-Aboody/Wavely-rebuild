@@ -1,6 +1,17 @@
 import { useState } from 'react';
 import { apiClient } from '../lib/apiClient';
 import { useNavigate } from '@tanstack/react-router';
+import { CheckCircle2, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 interface EmailVerificationModalProps {
   isOpen: boolean;
@@ -16,8 +27,6 @@ export const EmailVerificationModal = ({ isOpen, onClose, email }: EmailVerifica
   const [resending, setResending] = useState(false);
   const navigate = useNavigate();
 
-  if (!isOpen) return null;
-
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -27,9 +36,9 @@ export const EmailVerificationModal = ({ isOpen, onClose, email }: EmailVerifica
       await apiClient.post('/auth/verify-email', { code });
       setSuccess(true);
 
-      // Redirect to dashboard after 2 seconds
+      // Redirect to home after 2 seconds
       setTimeout(() => {
-        navigate({ to: '/dashboard' });
+        navigate({ to: '/home' });
       }, 2000);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid verification code');
@@ -52,91 +61,81 @@ export const EmailVerificationModal = ({ isOpen, onClose, email }: EmailVerifica
     }
   };
 
-  if (success) {
-    return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Email Verified!</h2>
-            <p className="text-gray-600">Redirecting you to dashboard...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Verify Your Email</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <p className="text-gray-600 mb-6">
-          We've sent a 6-digit verification code to <span className="font-semibold text-gray-900">{email}</span>
-        </p>
-
-        <form onSubmit={handleVerify} className="space-y-4">
-          <div>
-            <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
-              Verification Code
-            </label>
-            <input
-              type="text"
-              id="code"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder="000000"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-center text-2xl font-mono tracking-widest"
-              maxLength={6}
-              pattern="\d{6}"
-              required
-            />
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-              {error}
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="sm:max-w-md">
+        {success ? (
+          <div className="flex flex-col items-center py-6">
+            <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle2 className="w-8 h-8 text-green-600" />
             </div>
-          )}
+            <h2 className="text-xl font-semibold text-foreground mb-1">Email verified</h2>
+            <p className="text-sm text-muted-foreground">Redirecting to your feed...</p>
+          </div>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>Verify your email</DialogTitle>
+              <DialogDescription>
+                We sent a 6-digit verification code to{' '}
+                <span className="font-semibold text-foreground">{email}</span>
+              </DialogDescription>
+            </DialogHeader>
 
-          <button
-            type="submit"
-            disabled={loading || code.length !== 6}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold
-                     hover:from-blue-700 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed
-                     transform hover:scale-[1.02] active:scale-[0.98]"
-          >
-            {loading ? 'Verifying...' : 'Verify Email'}
-          </button>
+            <form onSubmit={handleVerify} className="space-y-4 mt-2">
+              <div className="space-y-2">
+                <Label htmlFor="verification-code">Verification code</Label>
+                <Input
+                  id="verification-code"
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="000000"
+                  className="text-center text-2xl font-mono tracking-widest"
+                  maxLength={6}
+                  pattern="\d{6}"
+                  required
+                />
+              </div>
 
-          <button
-            type="button"
-            onClick={handleResend}
-            disabled={resending}
-            className="w-full text-blue-600 hover:text-blue-700 font-medium transition-colors text-sm"
-          >
-            {resending ? 'Sending...' : "Didn't receive the code? Resend"}
-          </button>
-        </form>
+              {error && (
+                <div className="rounded-md bg-destructive/10 px-4 py-3">
+                  <p className="text-sm text-destructive">{error}</p>
+                </div>
+              )}
 
-        <p className="text-xs text-gray-500 text-center mt-6">
-          Code expires in 24 hours
-        </p>
-      </div>
-    </div>
+              <Button
+                type="submit"
+                disabled={loading || code.length !== 6}
+                className="w-full"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Verifying...
+                  </span>
+                ) : (
+                  'Verify'
+                )}
+              </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleResend}
+                disabled={resending}
+                className="w-full text-sm"
+              >
+                {resending ? 'Sending...' : 'Resend code'}
+              </Button>
+            </form>
+
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              Code expires in 24 hours
+            </p>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 };

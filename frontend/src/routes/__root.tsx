@@ -1,5 +1,4 @@
 import { createRootRoute, Outlet, useMatches, useRouterState } from '@tanstack/react-router';
-import { Navbar } from '../components/Navbar';
 import { Sidebar } from '../components/Sidebar';
 import { NotFound } from '../components/NotFound';
 import { useAuthStore } from '../stores/authStore';
@@ -23,8 +22,6 @@ function RootLayout() {
 
   // Show sidebar for authenticated users on non-auth routes (but not landing page)
   const showSidebar = isAuthenticated && !isAuthRoute && !isNotFound && !isLandingPage;
-  // Show navbar on landing page for all users
-  const showNavbar = isLandingPage;
 
   return (
     <div className="min-h-screen">
@@ -35,7 +32,6 @@ function RootLayout() {
           marginLeft: showSidebar ? 'var(--sidebar-width, 256px)' : '0',
         }}
       >
-        {showNavbar && <Navbar transparent={isLandingPage} />}
         <Outlet />
       </div>
     </div>

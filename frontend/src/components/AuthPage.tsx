@@ -24,7 +24,7 @@ export const AuthPage = () => {
   }, [isAuthenticated, navigate]);
 
   const handleAuthSuccess = () => {
-    navigate({ to: '/' });
+    navigate({ to: '/home' });
   };
 
   const handleToggleMode = () => {
@@ -34,17 +34,17 @@ export const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 relative overflow-hidden">
-      {/* Logo at top - fixed position */}
-      <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Fixed top bar */}
+      <div className="fixed top-0 left-0 right-0 bg-background border-b border-border z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <Link to="/" className="flex items-center gap-3 group w-fit">
+          <Link to="/" className="flex items-center gap-3 w-fit">
             <img
               src="/Wavely-Logo.png"
               alt="Wavely Logo"
-              className="h-9 w-auto transition-transform duration-300 group-hover:scale-105"
+              className="h-9 w-auto"
             />
-            <span className="text-2xl font-black text-blue-500 tracking-tight">
+            <span className="text-2xl font-black text-primary tracking-tight">
               Wavely
             </span>
           </Link>
