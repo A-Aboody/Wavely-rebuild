@@ -12,7 +12,7 @@ import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { EmailService } from '../email/email.service';
-import { LoginDto, RegisterDto, AuthResponse, User } from '../types';
+import type { LoginDto, RegisterDto, AuthResponse, User } from '@wavely/shared';
 
 @Injectable()
 export class AuthService {
@@ -27,10 +27,7 @@ export class AuthService {
   async register(registerDto: RegisterDto): Promise<AuthResponse> {
     const existingUser = await this.prisma.user.findFirst({
       where: {
-        OR: [
-          { email: registerDto.email },
-          { username: registerDto.username },
-        ],
+        OR: [{ email: registerDto.email }, { username: registerDto.username }],
       },
     });
 
@@ -51,7 +48,6 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
-    // Generate 6-digit verification code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     const verificationExpires = new Date();
     verificationExpires.setHours(verificationExpires.getHours() + 24); // 24 hours
@@ -69,13 +65,8 @@ export class AuthService {
       },
     });
 
-    // Send verification email
     try {
-      await this.emailService.sendVerificationEmail(
-        user.email,
-        verificationCode,
-        user.username,
-      );
+      await this.emailService.sendVerificationEmail(user.email, verificationCode, user.username);
     } catch (error) {
       console.error('Failed to send verification email:', error);
       // Don't fail registration if email fails
@@ -100,10 +91,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(
-      loginDto.password,
-      user.password,
-    );
+    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
@@ -124,10 +112,7 @@ export class AuthService {
     };
   }
 
-  async refreshTokens(
-    userId: string,
-    refreshToken: string,
-  ): Promise<{ accessToken: string }> {
+  async refreshTokens(userId: string, refreshToken: string): Promise<{ accessToken: string }> {
     const storedToken = await this.redisService.get(`refresh:${userId}`);
 
     if (!storedToken || storedToken !== refreshToken) {
@@ -236,7 +221,6 @@ export class AuthService {
       },
     });
 
-    // Send welcome email
     try {
       await this.emailService.sendWelcomeEmail(user.email, user.username);
     } catch (error) {
@@ -259,7 +243,6 @@ export class AuthService {
       throw new BadRequestException('Email already verified');
     }
 
-    // Generate new code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     const verificationExpires = new Date();
     verificationExpires.setHours(verificationExpires.getHours() + 24);
@@ -272,11 +255,7 @@ export class AuthService {
       },
     });
 
-    await this.emailService.sendVerificationEmail(
-      user.email,
-      verificationCode,
-      user.username,
-    );
+    await this.emailService.sendVerificationEmail(user.email, verificationCode, user.username);
 
     return { message: 'Verification code sent' };
   }
@@ -291,7 +270,6 @@ export class AuthService {
       return { message: 'If an account exists, a password reset email has been sent' };
     }
 
-    // Generate secure reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
     const resetExpires = new Date();
     resetExpires.setHours(resetExpires.getHours() + 1); // 1 hour
@@ -304,19 +282,12 @@ export class AuthService {
       },
     });
 
-    await this.emailService.sendPasswordResetEmail(
-      user.email,
-      resetToken,
-      user.username,
-    );
+    await this.emailService.sendPasswordResetEmail(user.email, resetToken, user.username);
 
     return { message: 'If an account exists, a password reset email has been sent' };
   }
 
-  async resetPassword(
-    token: string,
-    newPassword: string,
-  ): Promise<{ message: string }> {
+  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
     const user = await this.prisma.user.findFirst({
       where: {
         passwordResetToken: token,
@@ -348,8 +319,9 @@ export class AuthService {
 
   async googleLogin(
     googleUser: any,
-  ): Promise<AuthResponse | { needsSetup: true; setupToken: string; email: string; displayName: string }> {
-    // Check if user exists with this Google ID
+  ): Promise<
+    AuthResponse | { needsSetup: true; setupToken: string; email: string; displayName: string }
+  > {
     const user = await this.prisma.user.findFirst({
       where: {
         provider: 'GOOGLE',
@@ -358,7 +330,6 @@ export class AuthService {
     });
 
     if (!user) {
-      // Check if email already exists with a different provider
       const existingUser = await this.prisma.user.findUnique({
         where: { email: googleUser.email },
       });
@@ -389,7 +360,6 @@ export class AuthService {
       };
     }
 
-    // Existing user — update last login and return tokens
     await this.prisma.user.update({
       where: { id: user.id },
       data: { lastLogin: new Date() },
@@ -460,10 +430,17 @@ export class AuthService {
     };
   }
 
+  // Allowlist: only these fields ever reach a client. Never spread the Prisma record,
+  // or new columns leak by default.
   private sanitizeUser(user: any): User {
-    const { password, emailVerificationCode, passwordResetToken, ...sanitized } = user;
     return {
-      ...sanitized,
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      displayName: user.displayName,
+      bio: user.bio ?? undefined,
+      profileImage: user.profileImage ?? undefined,
+      bannerImage: user.bannerImage ?? undefined,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
       lastLogin: user.lastLogin?.toISOString(),

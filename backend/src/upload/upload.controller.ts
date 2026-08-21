@@ -9,6 +9,7 @@ import {
   Param,
   Req,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -32,9 +33,7 @@ export class UploadController {
     }
 
     if (!type || !['profile', 'wave', 'media'].includes(type)) {
-      throw new BadRequestException(
-        'Invalid upload type. Must be: profile, wave, or media',
-      );
+      throw new BadRequestException('Invalid upload type. Must be: profile, wave, or media');
     }
 
     const userId = req.user['sub'];
@@ -48,17 +47,15 @@ export class UploadController {
 
   @Delete(':key')
   async deleteFile(@Param('key') key: string, @Req() req: Request) {
-    // Decode the key (it might be URL encoded)
     const decodedKey = decodeURIComponent(key);
 
-    // Verify that the file belongs to the user (optional security check)
     const userId = req.user['sub'];
 
-    // Check if the key contains the user's ID (basic ownership check)
-    if (!decodedKey.includes(userId) && !decodedKey.includes('anonymous')) {
-      throw new BadRequestException(
-        'You do not have permission to delete this file',
-      );
+    // Keys are `folder/<userId>-<uuid>-<timestamp>.<ext>`, so ownership is the filename prefix.
+    // A substring match would also accept an 'anonymous' key, which any user could then delete.
+    const fileName = decodedKey.split('/').pop() ?? '';
+    if (!fileName.startsWith(`${userId}-`)) {
+      throw new ForbiddenException('You do not have permission to delete this file');
     }
 
     await this.uploadService.deleteFile(decodedKey);
@@ -70,10 +67,7 @@ export class UploadController {
   }
 
   @Post('signed-url')
-  async getSignedUrl(
-    @Body('key') key: string,
-    @Body('expiresIn') expiresIn: number = 3600,
-  ) {
+  async getSignedUrl(@Body('key') key: string, @Body('expiresIn') expiresIn: number = 3600) {
     if (!key) {
       throw new BadRequestException('No key provided');
     }
