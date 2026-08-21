@@ -1,0 +1,8 @@
+node_modules
+dist
+build
+coverage
+package-lock.json
+frontend/src/routeTree.gen.ts
+frontend/.tanstack
+backend/prisma/migrations
