@@ -14,7 +14,11 @@ export class EmailService {
     this.frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:5173');
   }
 
-  async sendVerificationEmail(email: string, verificationCode: string, username: string): Promise<void> {
+  async sendVerificationEmail(
+    email: string,
+    verificationCode: string,
+    username: string,
+  ): Promise<void> {
     try {
       await this.mailerService.sendMail({
         to: email,
@@ -27,7 +31,7 @@ export class EmailService {
             </div>
 
             <div style="background-color: #f8f9fa; border-radius: 10px; padding: 30px; margin-bottom: 20px;">
-              <h2 style="color: #333; margin-top: 0;">Hi ${username}! 👋</h2>
+              <h2 style="color: #333; margin-top: 0;">Hi ${username}</h2>
               <p style="color: #666; font-size: 16px; line-height: 1.6;">
                 Thanks for signing up! To complete your registration, please verify your email address using the code below:
               </p>
@@ -46,7 +50,7 @@ export class EmailService {
 
             <div style="text-align: center; color: #999; font-size: 12px; padding-top: 20px; border-top: 1px solid #eee;">
               <p>© 2025 Wavely. All rights reserved.</p>
-              <p>Lock it with Locket 🔒</p>
+              <p>Lock it with Locket</p>
             </div>
           </div>
         `,
@@ -105,7 +109,7 @@ export class EmailService {
 
             <div style="text-align: center; color: #999; font-size: 12px; padding-top: 20px; border-top: 1px solid #eee;">
               <p>© 2025 Wavely. All rights reserved.</p>
-              <p>Lock it with Locket 🔒</p>
+              <p>Lock it with Locket</p>
             </div>
           </div>
         `,
@@ -122,7 +126,7 @@ export class EmailService {
     try {
       await this.mailerService.sendMail({
         to: email,
-        subject: 'Welcome to Wavely! 🎉',
+        subject: 'Welcome to Wavely',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="text-align: center; margin-bottom: 30px;">
@@ -131,7 +135,7 @@ export class EmailService {
             </div>
 
             <div style="background-color: #f8f9fa; border-radius: 10px; padding: 30px; margin-bottom: 20px;">
-              <h2 style="color: #333; margin-top: 0;">Welcome to Wavely, ${username}! 🎊</h2>
+              <h2 style="color: #333; margin-top: 0;">Welcome to Wavely, ${username}</h2>
               <p style="color: #666; font-size: 16px; line-height: 1.6;">
                 We're excited to have you on board! Your account is now verified and ready to go.
               </p>
@@ -153,7 +157,7 @@ export class EmailService {
 
             <div style="text-align: center; color: #999; font-size: 12px; padding-top: 20px; border-top: 1px solid #eee;">
               <p>© 2025 Wavely. All rights reserved.</p>
-              <p>Lock it with Locket 🔒</p>
+              <p>Lock it with Locket</p>
             </div>
           </div>
         `,

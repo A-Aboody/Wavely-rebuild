@@ -8,8 +8,7 @@ interface AuthState {
   refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  
-  // Actions
+
   setAuth: (auth: AuthResponse) => void;
   setUser: (user: User) => void;
   updateUser: (updates: Partial<User>) => void;
@@ -66,6 +65,6 @@ export const useAuthStore = create<AuthState>()(
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
-    }
-  )
+    },
+  ),
 );

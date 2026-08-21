@@ -1,9 +1,5 @@
 import apiClient from '../lib/apiClient';
-import {
-  Comment,
-  CreateCommentDto,
-  UpdateCommentDto,
-} from '@wavely/shared';
+import { Comment, CreateCommentDto, UpdateCommentDto } from '@wavely/shared';
 
 export const commentsApi = {
   create: async (data: CreateCommentDto): Promise<Comment> => {

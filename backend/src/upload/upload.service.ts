@@ -28,17 +28,13 @@ export class UploadService {
   constructor(private configService: ConfigService) {
     const region = this.configService.get<string>('AWS_REGION', 'us-east-1');
     const accessKeyId = this.configService.get<string>('AWS_ACCESS_KEY_ID');
-    const secretAccessKey = this.configService.get<string>(
-      'AWS_SECRET_ACCESS_KEY',
-    );
+    const secretAccessKey = this.configService.get<string>('AWS_SECRET_ACCESS_KEY');
 
     this.bucketName = this.configService.get<string>('AWS_S3_BUCKET');
     this.cloudFrontUrl = this.configService.get<string>('AWS_CLOUDFRONT_URL');
 
     if (!accessKeyId || !secretAccessKey || !this.bucketName) {
-      console.warn(
-        'AWS credentials not configured. File uploads will not work.',
-      );
+      console.warn('AWS credentials not configured. File uploads will not work.');
       return;
     }
 
@@ -51,9 +47,6 @@ export class UploadService {
     });
   }
 
-  /**
-   * Upload file to S3
-   */
   async uploadFile(
     file: Express.Multer.File,
     type: UploadType,
@@ -63,10 +56,8 @@ export class UploadService {
       throw new BadRequestException('File upload service not configured');
     }
 
-    // Validate file
     this.validateFile(file, type);
 
-    // Process image if needed
     let buffer = file.buffer;
     let contentType = file.mimetype;
 
@@ -76,10 +67,8 @@ export class UploadService {
       contentType = processed.contentType;
     }
 
-    // Generate unique filename
     const key = this.generateKey(type, file.originalname, userId);
 
-    // Upload to S3
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
       Key: key,
@@ -95,7 +84,6 @@ export class UploadService {
 
     await this.s3Client.send(command);
 
-    // Generate URL
     const url = this.cloudFrontUrl
       ? `${this.cloudFrontUrl}/${key}`
       : `https://${this.bucketName}.s3.amazonaws.com/${key}`;
@@ -108,9 +96,6 @@ export class UploadService {
     };
   }
 
-  /**
-   * Delete file from S3
-   */
   async deleteFile(key: string): Promise<void> {
     if (!this.s3Client) {
       throw new BadRequestException('File upload service not configured');
@@ -124,9 +109,6 @@ export class UploadService {
     await this.s3Client.send(command);
   }
 
-  /**
-   * Generate signed URL for private files
-   */
   async getSignedUrl(key: string, expiresIn: number = 3600): Promise<string> {
     if (!this.s3Client) {
       throw new BadRequestException('File upload service not configured');
@@ -141,29 +123,10 @@ export class UploadService {
     return url;
   }
 
-  /**
-   * Validate file type and size
-   */
   private validateFile(file: Express.Multer.File, type: UploadType): void {
-    const allowedImageTypes = [
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'image/gif',
-      'image/webp',
-    ];
-    const allowedAudioTypes = [
-      'audio/mpeg',
-      'audio/mp3',
-      'audio/wav',
-      'audio/flac',
-      'audio/ogg',
-    ];
-    const allowedVideoTypes = [
-      'video/mp4',
-      'video/webm',
-      'video/quicktime',
-    ];
+    const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedAudioTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/flac', 'audio/ogg'];
+    const allowedVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime'];
 
     let allowedTypes: string[];
     let maxSize: number;
@@ -178,11 +141,7 @@ export class UploadService {
         maxSize = 10 * 1024 * 1024; // 10MB
         break;
       case 'media':
-        allowedTypes = [
-          ...allowedImageTypes,
-          ...allowedAudioTypes,
-          ...allowedVideoTypes,
-        ];
+        allowedTypes = [...allowedImageTypes, ...allowedAudioTypes, ...allowedVideoTypes];
         maxSize = 100 * 1024 * 1024; // 100MB
         break;
       default:
@@ -190,21 +149,14 @@ export class UploadService {
     }
 
     if (!allowedTypes.includes(file.mimetype)) {
-      throw new BadRequestException(
-        `Invalid file type. Allowed types: ${allowedTypes.join(', ')}`,
-      );
+      throw new BadRequestException(`Invalid file type. Allowed types: ${allowedTypes.join(', ')}`);
     }
 
     if (file.size > maxSize) {
-      throw new BadRequestException(
-        `File too large. Maximum size: ${maxSize / 1024 / 1024}MB`,
-      );
+      throw new BadRequestException(`File too large. Maximum size: ${maxSize / 1024 / 1024}MB`);
     }
   }
 
-  /**
-   * Process and optimize image
-   */
   private async processImage(
     buffer: Buffer,
     type: UploadType,
@@ -237,14 +189,7 @@ export class UploadService {
     };
   }
 
-  /**
-   * Generate S3 key for file
-   */
-  private generateKey(
-    type: UploadType,
-    originalName: string,
-    userId?: string,
-  ): string {
+  private generateKey(type: UploadType, originalName: string, userId?: string): string {
     const timestamp = Date.now();
     const uuid = uuidv4();
     const extension = originalName.split('.').pop() || 'webp';
@@ -268,9 +213,6 @@ export class UploadService {
     return `${folder}/${userId || 'anonymous'}-${uuid}-${timestamp}.${extension}`;
   }
 
-  /**
-   * Check if file is an image
-   */
   private isImage(mimetype: string): boolean {
     return mimetype.startsWith('image/');
   }

@@ -1,6 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { Wave } from '@wavely/shared';
-import { Heart, MessageCircle, Bookmark, Share2, Star, MapPin, Volume2, VolumeX } from 'lucide-react';
+import {
+  Heart,
+  MessageCircle,
+  Bookmark,
+  Share2,
+  Star,
+  MapPin,
+  Volume2,
+  VolumeX,
+} from 'lucide-react';
 import { useLikeWave, useSaveWave } from '../hooks/useWaves';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuthStore } from '../stores/authStore';
@@ -31,7 +40,8 @@ export const WaveDetailModal = ({ wave, isOpen, onClose }: WaveDetailModalProps)
   useEffect(() => {
     if (isOpen && videoRef.current && wave.mediaType === 'VIDEO') {
       videoRef.current.currentTime = 0;
-      videoRef.current.play()
+      videoRef.current
+        .play()
         .then(() => setIsVideoPlaying(true))
         .catch(() => {
           if (videoRef.current) {
@@ -92,11 +102,14 @@ export const WaveDetailModal = ({ wave, isOpen, onClose }: WaveDetailModalProps)
     .slice(0, 2);
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="max-w-7xl h-[90vh] p-0 gap-0 overflow-hidden flex border-border [&>button]:hidden">
-        <DialogTitle className="sr-only">
-          {wave.title || 'Wave detail'}
-        </DialogTitle>
+        <DialogTitle className="sr-only">{wave.title || 'Wave detail'}</DialogTitle>
 
         {/* Left Side - Media */}
         <div className="flex-1 flex flex-col overflow-hidden bg-black">
@@ -142,8 +155,7 @@ export const WaveDetailModal = ({ wave, isOpen, onClose }: WaveDetailModalProps)
                     <span className="font-semibold">
                       {wave.waveType === 'PERSONAL'
                         ? `${wave.personalRating?.toFixed(1)}/10`
-                        : `${wave.averageRating?.toFixed(1)}/${wave.communityRatingScale}`
-                      }
+                        : `${wave.averageRating?.toFixed(1)}/${wave.communityRatingScale}`}
                     </span>
                   </div>
                 </div>
@@ -164,15 +176,16 @@ export const WaveDetailModal = ({ wave, isOpen, onClose }: WaveDetailModalProps)
             >
               <Avatar className="h-12 w-12 border-2 border-border">
                 <AvatarImage
-                  src={wave.user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(wave.user.displayName)}&background=3b82f6&color=fff`}
+                  src={
+                    wave.user.profileImage ||
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(wave.user.displayName)}&background=3b82f6&color=fff`
+                  }
                   alt={wave.user.displayName}
                 />
                 <AvatarFallback>{userInitials}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-foreground truncate">
-                  {wave.user.displayName}
-                </p>
+                <p className="font-semibold text-foreground truncate">{wave.user.displayName}</p>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <span>@{wave.user.username}</span>
                   <span>·</span>
@@ -193,18 +206,16 @@ export const WaveDetailModal = ({ wave, isOpen, onClose }: WaveDetailModalProps)
 
           {/* Wave Details */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {wave.title && (
-              <h2 className="text-xl font-semibold text-foreground">
-                {wave.title}
-              </h2>
-            )}
+            {wave.title && <h2 className="text-xl font-semibold text-foreground">{wave.title}</h2>}
 
             {wave.content && (
               <div>
-                <p className={cn(
-                  'text-muted-foreground whitespace-pre-wrap',
-                  !showFullContent && wave.content.length > 200 && 'line-clamp-3'
-                )}>
+                <p
+                  className={cn(
+                    'text-muted-foreground whitespace-pre-wrap',
+                    !showFullContent && wave.content.length > 200 && 'line-clamp-3',
+                  )}
+                >
                   {wave.content}
                 </p>
                 {wave.content.length > 200 && (
@@ -221,9 +232,7 @@ export const WaveDetailModal = ({ wave, isOpen, onClose }: WaveDetailModalProps)
 
             {wave.category && (
               <div className="flex items-center gap-2">
-                <Badge variant="secondary">
-                  #{wave.category}
-                </Badge>
+                <Badge variant="secondary">#{wave.category}</Badge>
               </div>
             )}
 
@@ -239,7 +248,7 @@ export const WaveDetailModal = ({ wave, isOpen, onClose }: WaveDetailModalProps)
                     'h-9 w-9 transition-colors',
                     wave.isLiked
                       ? 'text-red-500 hover:text-red-600'
-                      : 'text-muted-foreground hover:text-red-500'
+                      : 'text-muted-foreground hover:text-red-500',
                   )}
                 >
                   <Heart
@@ -253,11 +262,7 @@ export const WaveDetailModal = ({ wave, isOpen, onClose }: WaveDetailModalProps)
                   {wave.likesCount}
                 </span>
 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 text-muted-foreground"
-                >
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground">
                   <MessageCircle className="h-[22px] w-[22px]" />
                 </Button>
                 <span className="text-sm font-medium text-muted-foreground mr-2">
@@ -281,7 +286,7 @@ export const WaveDetailModal = ({ wave, isOpen, onClose }: WaveDetailModalProps)
                   'h-9 w-9 transition-colors',
                   wave.isSaved
                     ? 'text-primary hover:text-primary/80'
-                    : 'text-muted-foreground hover:text-primary'
+                    : 'text-muted-foreground hover:text-primary',
                 )}
               >
                 <Bookmark
@@ -296,9 +301,7 @@ export const WaveDetailModal = ({ wave, isOpen, onClose }: WaveDetailModalProps)
             {/* Comments Section */}
             <Separator />
             <div>
-              <h3 className="font-semibold text-foreground mb-4">
-                Comments
-              </h3>
+              <h3 className="font-semibold text-foreground mb-4">Comments</h3>
               <CommentSection wave={wave} />
             </div>
           </div>

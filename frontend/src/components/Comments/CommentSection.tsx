@@ -49,7 +49,7 @@ export const CommentSection = ({ wave }: CommentSectionProps) => {
             src={
               currentUser.profileImage ||
               `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                currentUser.displayName || currentUser.username
+                currentUser.displayName || currentUser.username,
               )}&background=3b82f6&color=fff`
             }
             alt={currentUser.displayName}

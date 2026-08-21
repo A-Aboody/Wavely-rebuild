@@ -172,10 +172,7 @@ function ProfilePage() {
     }
   };
 
-  const handleImageUpload = async (
-    file: File,
-    type: 'profile' | 'banner'
-  ): Promise<string> => {
+  const handleImageUpload = async (file: File, type: 'profile' | 'banner'): Promise<string> => {
     const formData = new FormData();
     formData.append('file', file);
     const uploadType = type === 'banner' ? 'profile' : type;
@@ -266,11 +263,7 @@ function ProfilePage() {
         ? isLoadingSaved
         : isLoadingLiked;
   const hasNextPage =
-    activeTab === 'waves'
-      ? hasNextWaves
-      : activeTab === 'saved'
-        ? hasNextSaved
-        : hasNextLiked;
+    activeTab === 'waves' ? hasNextWaves : activeTab === 'saved' ? hasNextSaved : hasNextLiked;
   const fetchNextPage =
     activeTab === 'waves'
       ? fetchNextWaves
@@ -297,9 +290,7 @@ function ProfilePage() {
       <div className="min-h-screen bg-muted flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-semibold text-foreground mb-2">User not found</h2>
-          <p className="text-muted-foreground">
-            The user you are looking for does not exist.
-          </p>
+          <p className="text-muted-foreground">The user you are looking for does not exist.</p>
         </div>
       </div>
     );
@@ -310,11 +301,7 @@ function ProfilePage() {
       {/* Banner */}
       <div className="relative h-64 bg-gradient-to-r from-primary to-blue-400">
         {profile.bannerImage && (
-          <img
-            src={profile.bannerImage}
-            alt="Banner"
-            className="w-full h-full object-cover"
-          />
+          <img src={profile.bannerImage} alt="Banner" className="w-full h-full object-cover" />
         )}
       </div>
 
@@ -330,7 +317,7 @@ function ProfilePage() {
                     src={
                       profile.profileImage ||
                       `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        profile.displayName || profile.username
+                        profile.displayName || profile.username,
                       )}&background=3b82f6&color=fff&size=200`
                     }
                     alt={profile.displayName}
@@ -348,22 +335,16 @@ function ProfilePage() {
                   </h1>
                   <p className="text-muted-foreground mb-3">@{profile.username}</p>
 
-                  {profile.bio && (
-                    <p className="text-foreground/80 mb-4">{profile.bio}</p>
-                  )}
+                  {profile.bio && <p className="text-foreground/80 mb-4">{profile.bio}</p>}
 
                   {/* Stats */}
                   <div className="flex flex-wrap gap-6 text-sm">
                     <div>
-                      <span className="font-semibold text-foreground">
-                        {profile.wavesCount}
-                      </span>
+                      <span className="font-semibold text-foreground">{profile.wavesCount}</span>
                       <span className="text-muted-foreground ml-1">Waves</span>
                     </div>
                     <div>
-                      <span className="font-semibold text-foreground">
-                        {followersCount}
-                      </span>
+                      <span className="font-semibold text-foreground">{followersCount}</span>
                       <span className="text-muted-foreground ml-1">Followers</span>
                     </div>
                     <div>
@@ -437,9 +418,7 @@ function ProfilePage() {
           <div className="px-4 pt-4">
             <Tabs
               value={activeTab}
-              onValueChange={(value) =>
-                setActiveTab(value as 'waves' | 'saved' | 'liked')
-              }
+              onValueChange={(value) => setActiveTab(value as 'waves' | 'saved' | 'liked')}
             >
               <div className="flex items-center justify-between">
                 <TabsList>
@@ -464,9 +443,7 @@ function ProfilePage() {
                     variant="ghost"
                     size="icon"
                     onClick={() => setViewMode('grid')}
-                    className={cn(
-                      viewMode === 'grid' && 'bg-accent text-accent-foreground'
-                    )}
+                    className={cn(viewMode === 'grid' && 'bg-accent text-accent-foreground')}
                   >
                     <Grid className="w-4 h-4" />
                   </Button>
@@ -474,9 +451,7 @@ function ProfilePage() {
                     variant="ghost"
                     size="icon"
                     onClick={() => setViewMode('list')}
-                    className={cn(
-                      viewMode === 'list' && 'bg-accent text-accent-foreground'
-                    )}
+                    className={cn(viewMode === 'list' && 'bg-accent text-accent-foreground')}
                   >
                     <List className="w-4 h-4" />
                   </Button>
@@ -539,11 +514,7 @@ function ProfilePage() {
         {/* Load More */}
         {hasNextPage && (
           <div className="flex justify-center pb-12">
-            <Button
-              variant="default"
-              onClick={() => fetchNextPage()}
-              disabled={isFetchingNext}
-            >
+            <Button variant="default" onClick={() => fetchNextPage()} disabled={isFetchingNext}>
               {isFetchingNext ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -562,9 +533,7 @@ function ProfilePage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Profile</DialogTitle>
-            <DialogDescription>
-              Update your profile information below.
-            </DialogDescription>
+            <DialogDescription>Update your profile information below.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
@@ -611,7 +580,7 @@ function ProfilePage() {
                     src={
                       editForm.profileImage ||
                       `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        editForm.displayName || username
+                        editForm.displayName || username,
                       )}&background=3b82f6&color=fff&size=200`
                     }
                     alt="Profile"
@@ -647,9 +616,7 @@ function ProfilePage() {
                 id="displayName"
                 type="text"
                 value={editForm.displayName}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, displayName: e.target.value }))
-                }
+                onChange={(e) => setEditForm((prev) => ({ ...prev, displayName: e.target.value }))}
               />
             </div>
 
@@ -659,9 +626,7 @@ function ProfilePage() {
               <Textarea
                 id="bio"
                 value={editForm.bio}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, bio: e.target.value }))
-                }
+                onChange={(e) => setEditForm((prev) => ({ ...prev, bio: e.target.value }))}
                 rows={4}
                 placeholder="Tell us about yourself..."
                 className="resize-none"
@@ -673,11 +638,7 @@ function ProfilePage() {
             <Button variant="outline" onClick={() => setShowEditModal(false)}>
               Cancel
             </Button>
-            <Button
-              variant="default"
-              onClick={handleSaveProfile}
-              disabled={isUploading}
-            >
+            <Button variant="default" onClick={handleSaveProfile} disabled={isUploading}>
               {isUploading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -693,11 +654,7 @@ function ProfilePage() {
 
       {/* Wave Detail Modal */}
       {selectedWave && (
-        <WaveDetailModal
-          wave={selectedWave}
-          isOpen={showWaveModal}
-          onClose={handleCloseModal}
-        />
+        <WaveDetailModal wave={selectedWave} isOpen={showWaveModal} onClose={handleCloseModal} />
       )}
     </div>
   );

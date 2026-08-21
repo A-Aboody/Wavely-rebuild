@@ -19,39 +19,40 @@ export const wavesApi = {
   },
 
   getFollowingFeed: async (params: FeedParams = {}): Promise<CursorPaginatedResponse<Wave>> => {
-    const response = await apiClient.get<CursorPaginatedResponse<Wave>>('/waves/following', { params });
+    const response = await apiClient.get<CursorPaginatedResponse<Wave>>('/waves/following', {
+      params,
+    });
     return response.data;
   },
 
   getUserWaves: async (
     username: string,
-    params: FeedParams = {}
+    params: FeedParams = {},
   ): Promise<CursorPaginatedResponse<Wave>> => {
-    const response = await apiClient.get<CursorPaginatedResponse<Wave>>(
-      `/waves/user/${username}`,
-      { params }
-    );
+    const response = await apiClient.get<CursorPaginatedResponse<Wave>>(`/waves/user/${username}`, {
+      params,
+    });
     return response.data;
   },
 
   getSavedWaves: async (
     username: string,
-    params: FeedParams = {}
+    params: FeedParams = {},
   ): Promise<CursorPaginatedResponse<Wave>> => {
     const response = await apiClient.get<CursorPaginatedResponse<Wave>>(
       `/waves/user/${username}/saved`,
-      { params }
+      { params },
     );
     return response.data;
   },
 
   getLikedWaves: async (
     username: string,
-    params: FeedParams = {}
+    params: FeedParams = {},
   ): Promise<CursorPaginatedResponse<Wave>> => {
     const response = await apiClient.get<CursorPaginatedResponse<Wave>>(
       `/waves/user/${username}/liked`,
-      { params }
+      { params },
     );
     return response.data;
   },

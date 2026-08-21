@@ -1,14 +1,7 @@
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Comment } from '@wavely/shared';
-import {
-  Heart,
-  MessageCircle,
-  Trash2,
-  ChevronDown,
-  ChevronUp,
-  Send,
-} from 'lucide-react';
+import { Heart, MessageCircle, Trash2, ChevronDown, ChevronUp, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuthStore } from '../../stores/authStore';
 import { commentsApi } from '../../api/comments.api';
@@ -91,7 +84,7 @@ export const CommentItem = ({
           src={
             comment.user.profileImage ||
             `https://ui-avatars.com/api/?name=${encodeURIComponent(
-              comment.user.displayName
+              comment.user.displayName,
             )}&background=3b82f6&color=fff`
           }
           alt={comment.user.displayName}
@@ -137,9 +130,7 @@ export const CommentItem = ({
             onClick={handleLike}
             disabled={!currentUser || likeMutation.isPending}
             className={`flex items-center gap-1 transition-colors ${
-              comment.isLiked
-                ? 'text-red-500'
-                : 'hover:text-red-500 disabled:opacity-50'
+              comment.isLiked ? 'text-red-500' : 'hover:text-red-500 disabled:opacity-50'
             }`}
           >
             <Heart
@@ -149,7 +140,7 @@ export const CommentItem = ({
               strokeWidth={comment.isLiked ? 0 : 2}
             />
             <span>{comment.likesCount}</span>
-            {creatorLikedIt && <span className="text-xs">❤️</span>}
+            {creatorLikedIt && <Heart size={10} fill="#ef4444" stroke="#ef4444" />}
           </button>
 
           {!isReply && (
@@ -186,7 +177,9 @@ export const CommentItem = ({
               ) : (
                 <>
                   <ChevronDown size={14} />
-                  <span>{repliesCount} {repliesCount === 1 ? 'reply' : 'replies'}</span>
+                  <span>
+                    {repliesCount} {repliesCount === 1 ? 'reply' : 'replies'}
+                  </span>
                 </>
               )}
             </button>
@@ -200,7 +193,7 @@ export const CommentItem = ({
               src={
                 currentUser.profileImage ||
                 `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  currentUser.displayName || currentUser.username
+                  currentUser.displayName || currentUser.username,
                 )}&background=3b82f6&color=fff`
               }
               alt={currentUser.displayName}

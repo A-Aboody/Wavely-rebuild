@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/auth.api';
 
 export const useAuth = () => {
-  const { user, isAuthenticated, setUser, logout, setLoading } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
 
   return {
     user,

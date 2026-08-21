@@ -34,22 +34,14 @@ export const Navbar = ({ transparent = false }: NavbarProps) => {
     <nav
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-colors duration-200',
-        transparent && !scrolled
-          ? 'bg-transparent'
-          : 'bg-white border-b border-border'
+        transparent && !scrolled ? 'bg-transparent' : 'bg-white border-b border-border',
       )}
     >
       <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5">
-          <img
-            src="/Wavely-Logo.png"
-            alt="Wavely"
-            className="h-8 w-auto"
-          />
-          <span className="text-xl font-black text-primary tracking-tight">
-            Wavely
-          </span>
+          <img src="/Wavely-Logo.png" alt="Wavely" className="h-8 w-auto" />
+          <span className="text-xl font-black text-primary tracking-tight">Wavely</span>
         </Link>
 
         {/* Navigation */}
@@ -63,10 +55,7 @@ export const Navbar = ({ transparent = false }: NavbarProps) => {
                 <Link to="/create">Create</Link>
               </Button>
               <Button variant="ghost" size="sm" asChild>
-                <Link
-                  to="/profile/$username"
-                  params={{ username: user?.username || '' }}
-                >
+                <Link to="/profile/$username" params={{ username: user?.username || '' }}>
                   <User className="h-4 w-4" />
                   <span className="hidden sm:inline">{user?.username}</span>
                 </Link>

@@ -1,9 +1,5 @@
 import apiClient from '../lib/apiClient';
-import {
-  UserProfile,
-  UpdateUserDto,
-  UserStats,
-} from '@wavely/shared';
+import { UserProfile, UpdateUserDto, UserStats } from '@wavely/shared';
 
 export const usersApi = {
   getProfile: async (username: string): Promise<UserProfile> => {

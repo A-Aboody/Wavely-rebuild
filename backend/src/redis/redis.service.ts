@@ -20,17 +20,17 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     });
 
     this.client.on('connect', () => {
-      console.log('✅ Redis connected');
+      console.log('Redis connected');
     });
 
     this.client.on('error', (err) => {
-      console.error('❌ Redis error:', err);
+      console.error('Redis error:', err);
     });
   }
 
   async onModuleDestroy() {
     await this.client.quit();
-    console.log('❌ Redis disconnected');
+    console.log('Redis disconnected');
   }
 
   async get(key: string): Promise<string | null> {
@@ -91,7 +91,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     await this.client.mset(...args);
   }
 
-  // Caching helpers
   async cacheGet<T>(key: string): Promise<T | null> {
     const data = await this.get(key);
     return data ? JSON.parse(data) : null;

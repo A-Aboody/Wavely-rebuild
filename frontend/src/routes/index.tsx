@@ -10,26 +10,22 @@ const features = [
   {
     image: '/figmaImages/Mov_Test.jpg',
     title: 'Rate and review',
-    description:
-      'Log your thoughts on movies, restaurants, games, and more.',
+    description: 'Log your thoughts on movies, restaurants, games, and more.',
   },
   {
     image: '/figmaImages/Porshce.jpg',
     title: 'Build your profile',
-    description:
-      'Your ratings and reviews create a personal taste profile over time.',
+    description: 'Your ratings and reviews create a personal taste profile over time.',
   },
   {
     image: '/figmaImages/Friend_Test.jpg',
     title: 'Find your people',
-    description:
-      'Connect with others who share your interests and preferences.',
+    description: 'Connect with others who share your interests and preferences.',
   },
   {
     image: '/figmaImages/Game_Test.png',
     title: 'Discover new favorites',
-    description:
-      'Get recommendations based on what you and your community enjoy.',
+    description: 'Get recommendations based on what you and your community enjoy.',
   },
   {
     image: '/figmaImages/Journey_Test.jpg',
@@ -39,8 +35,7 @@ const features = [
   {
     image: '/figmaImages/Rest_Test.jpg',
     title: 'Share what matters',
-    description:
-      'Post your experiences and see what resonates with others.',
+    description: 'Post your experiences and see what resonates with others.',
   },
 ];
 
@@ -51,14 +46,8 @@ function LandingPage() {
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-border">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-3">
           <Link to="/" className="flex items-center gap-2.5">
-            <img
-              src="/Wavely-Logo.png"
-              alt="Wavely"
-              className="h-8 w-auto"
-            />
-            <span className="text-xl font-black text-primary tracking-tight">
-              Wavely
-            </span>
+            <img src="/Wavely-Logo.png" alt="Wavely" className="h-8 w-auto" />
+            <span className="text-xl font-black text-primary tracking-tight">Wavely</span>
           </Link>
 
           <div className="flex items-center gap-2">
@@ -78,8 +67,8 @@ function LandingPage() {
           Track the experiences that shape you
         </h1>
         <p className="mt-5 text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-          Rate movies, restaurants, games, and places you visit. Share with
-          people who care about the same things.
+          Rate movies, restaurants, games, and places you visit. Share with people who care about
+          the same things.
         </p>
         <div className="mt-8 flex items-center justify-center gap-3">
           <Button size="lg" asChild>
@@ -118,12 +107,8 @@ function LandingPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <h3 className="text-lg font-semibold text-white mb-1">
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm text-white/80 leading-relaxed">
-                    {feature.description}
-                  </p>
+                  <h3 className="text-lg font-semibold text-white mb-1">{feature.title}</h3>
+                  <p className="text-sm text-white/80 leading-relaxed">{feature.description}</p>
                 </div>
               </div>
             </div>
@@ -134,9 +119,7 @@ function LandingPage() {
       {/* CTA */}
       <section className="bg-gray-50 border-t border-border">
         <div className="max-w-2xl mx-auto px-6 py-20 text-center">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">
-            Ready to start?
-          </h2>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">Ready to start?</h2>
           <p className="mt-3 text-muted-foreground">
             Join Wavely and begin building a record of the things you love.
           </p>

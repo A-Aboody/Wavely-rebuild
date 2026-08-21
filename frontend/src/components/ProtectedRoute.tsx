@@ -18,13 +18,15 @@ export const ProtectedRoute = ({ children, fallback }: ProtectedRouteProps) => {
   }, [isAuthenticated, navigate]);
 
   if (!isAuthenticated) {
-    return fallback || (
-      <div className="min-h-screen flex items-center justify-center bg-gray-950">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          <p className="mt-4 text-gray-400">Checking authentication...</p>
+    return (
+      fallback || (
+        <div className="min-h-screen flex items-center justify-center bg-gray-950">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <p className="mt-4 text-gray-400">Checking authentication...</p>
+          </div>
         </div>
-      </div>
+      )
     );
   }
 

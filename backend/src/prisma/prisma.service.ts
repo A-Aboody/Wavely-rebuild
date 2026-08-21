@@ -12,23 +12,20 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   async onModuleInit() {
     await this.$connect();
-    console.log('✅ Database connected');
+    console.log('Database connected');
   }
 
   async onModuleDestroy() {
     await this.$disconnect();
-    console.log('❌ Database disconnected');
+    console.log('Database disconnected');
   }
 
-  // Helper methods for common operations
   async cleanDatabase() {
     if (process.env.NODE_ENV === 'production') {
       throw new Error('Cannot clean database in production');
     }
 
-    const models = Reflect.ownKeys(this).filter(
-      (key) => key[0] !== '_' && key !== 'constructor'
-    );
+    const models = Reflect.ownKeys(this).filter((key) => key[0] !== '_' && key !== 'constructor');
 
     return Promise.all(
       models.map((modelKey) => {
@@ -36,7 +33,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         if (typeof model === 'object' && model !== null && 'deleteMany' in model) {
           return (model as any).deleteMany();
         }
-      })
+      }),
     );
   }
 }

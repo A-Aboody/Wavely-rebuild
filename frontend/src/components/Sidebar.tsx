@@ -2,25 +2,12 @@ import { Link } from '@tanstack/react-router';
 import { useAuthStore } from '../stores/authStore';
 import { authApi } from '../api/auth.api';
 import { useState, useRef } from 'react';
-import {
-  Home,
-  PlusSquare,
-  User,
-  LogOut,
-  PanelLeftClose,
-  PanelLeft,
-  Camera,
-} from 'lucide-react';
+import { Home, PlusSquare, User, LogOut, PanelLeftClose, PanelLeft, Camera } from 'lucide-react';
 import apiClient from '../lib/apiClient';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import {
-  TooltipProvider,
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from '@/components/ui/tooltip';
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 export const Sidebar = () => {
   const { user, isAuthenticated, updateUser } = useAuthStore();
@@ -47,7 +34,6 @@ export const Sidebar = () => {
     try {
       setIsUploadingImage(true);
 
-      // Upload to S3
       const formData = new FormData();
       formData.append('file', file);
       formData.append('type', 'profile');
@@ -61,12 +47,10 @@ export const Sidebar = () => {
 
       const imageUrl = uploadResponse.data.data.url;
 
-      // Update user profile
       await apiClient.put('/users/me', {
         profileImage: imageUrl,
       });
 
-      // Update local state
       updateUser({ profileImage: imageUrl });
     } catch (error) {
       console.error('Error uploading profile image:', error);
@@ -80,10 +64,7 @@ export const Sidebar = () => {
 
   // Communicate collapse state to parent via CSS variable
   if (typeof document !== 'undefined') {
-    document.documentElement.style.setProperty(
-      '--sidebar-width',
-      isCollapsed ? '80px' : '256px'
-    );
+    document.documentElement.style.setProperty('--sidebar-width', isCollapsed ? '80px' : '256px');
   }
 
   const navItems = [
@@ -91,9 +72,10 @@ export const Sidebar = () => {
     { to: '/create' as const, label: 'Create', icon: PlusSquare },
   ];
 
-  const profileImageUrl = user.profileImage ||
+  const profileImageUrl =
+    user.profileImage ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      user.displayName || user.username
+      user.displayName || user.username,
     )}&background=3b82f6&color=fff&size=128`;
 
   const userInitials = (user.displayName || user.username)
@@ -108,7 +90,7 @@ export const Sidebar = () => {
       <aside
         className={cn(
           'fixed left-0 top-0 h-screen bg-background border-r border-border transition-all duration-300 z-50 flex flex-col',
-          isCollapsed ? 'w-20' : 'w-64'
+          isCollapsed ? 'w-20' : 'w-64',
         )}
       >
         {/* User Profile Section */}
@@ -122,13 +104,20 @@ export const Sidebar = () => {
               aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               className="h-8 w-8 text-muted-foreground"
             >
-              {isCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+              {isCollapsed ? (
+                <PanelLeft className="h-4 w-4" />
+              ) : (
+                <PanelLeftClose className="h-4 w-4" />
+              )}
             </Button>
           </div>
 
           <div className="flex flex-col items-center">
             <div className="relative group flex-shrink-0">
-              <Avatar className="h-12 w-12 cursor-pointer ring-2 ring-primary/10" onClick={handleImageClick}>
+              <Avatar
+                className="h-12 w-12 cursor-pointer ring-2 ring-primary/10"
+                onClick={handleImageClick}
+              >
                 <AvatarImage
                   src={profileImageUrl}
                   alt={user.displayName}
@@ -181,25 +170,19 @@ export const Sidebar = () => {
                       isCollapsed ? 'justify-center' : 'gap-3',
                       isActive
                         ? 'bg-accent text-accent-foreground'
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                     )}
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
-                    {!isCollapsed && (
-                      <span className="font-medium text-sm">{item.label}</span>
-                    )}
+                    {!isCollapsed && <span className="font-medium text-sm">{item.label}</span>}
                   </div>
                 );
 
                 if (isCollapsed) {
                   return (
                     <Tooltip>
-                      <TooltipTrigger asChild>
-                        {linkContent}
-                      </TooltipTrigger>
-                      <TooltipContent side="right">
-                        {item.label}
-                      </TooltipContent>
+                      <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
+                      <TooltipContent side="right">{item.label}</TooltipContent>
                     </Tooltip>
                   );
                 }
@@ -222,25 +205,19 @@ export const Sidebar = () => {
                     isCollapsed ? 'justify-center' : 'gap-3',
                     isActive
                       ? 'bg-accent text-accent-foreground'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                   )}
                 >
                   <User className="h-5 w-5 flex-shrink-0" />
-                  {!isCollapsed && (
-                    <span className="font-medium text-sm">Profile</span>
-                  )}
+                  {!isCollapsed && <span className="font-medium text-sm">Profile</span>}
                 </div>
               );
 
               if (isCollapsed) {
                 return (
                   <Tooltip>
-                    <TooltipTrigger asChild>
-                      {linkContent}
-                    </TooltipTrigger>
-                    <TooltipContent side="right">
-                      Profile
-                    </TooltipContent>
+                    <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
+                    <TooltipContent side="right">Profile</TooltipContent>
                   </Tooltip>
                 );
               }
@@ -264,9 +241,7 @@ export const Sidebar = () => {
                   <LogOut className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="right">
-                Log out
-              </TooltipContent>
+              <TooltipContent side="right">Log out</TooltipContent>
             </Tooltip>
           ) : (
             <Button

@@ -19,7 +19,6 @@ export const authApi = {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear auth state regardless of API call success
       useAuthStore.getState().logout();
     }
   },
@@ -37,7 +36,7 @@ export const authApi = {
         headers: {
           Authorization: `Bearer ${refreshToken}`,
         },
-      }
+      },
     );
     return response.data;
   },

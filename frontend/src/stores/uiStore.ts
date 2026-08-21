@@ -7,8 +7,7 @@ interface UIState {
   theme: Theme;
   sidebarOpen: boolean;
   activeModal: string | null;
-  
-  // Actions
+
   setTheme: (theme: Theme) => void;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
@@ -25,11 +24,10 @@ export const useUIStore = create<UIState>()(
 
       setTheme: (theme: Theme) => {
         set({ theme });
-        
-        // Apply theme to document
+
         const root = window.document.documentElement;
         root.classList.remove('light', 'dark');
-        
+
         if (theme === 'system') {
           const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
             ? 'dark'
@@ -58,11 +56,10 @@ export const useUIStore = create<UIState>()(
     }),
     {
       name: 'wavely-ui',
-    }
-  )
+    },
+  ),
 );
 
-// Initialize theme on load
 if (typeof window !== 'undefined') {
   const stored = localStorage.getItem('wavely-ui');
   if (stored) {

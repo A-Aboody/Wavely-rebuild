@@ -36,7 +36,6 @@ export const EmailVerificationModal = ({ isOpen, onClose, email }: EmailVerifica
       await apiClient.post('/auth/verify-email', { code });
       setSuccess(true);
 
-      // Redirect to home after 2 seconds
       setTimeout(() => {
         navigate({ to: '/home' });
       }, 2000);
@@ -62,7 +61,12 @@ export const EmailVerificationModal = ({ isOpen, onClose, email }: EmailVerifica
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         {success ? (
           <div className="flex flex-col items-center py-6">
@@ -104,11 +108,7 @@ export const EmailVerificationModal = ({ isOpen, onClose, email }: EmailVerifica
                 </div>
               )}
 
-              <Button
-                type="submit"
-                disabled={loading || code.length !== 6}
-                className="w-full"
-              >
+              <Button type="submit" disabled={loading || code.length !== 6} className="w-full">
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />

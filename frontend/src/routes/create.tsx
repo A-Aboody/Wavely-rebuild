@@ -148,9 +148,26 @@ function CreatePage() {
       case 'IMAGE':
         return ['Art', 'Photography', 'Nature', 'People', 'Food', 'Travel', 'Wallpaper', 'Meme'];
       case 'VIDEO':
-        return ['Short Film', 'Vlog', 'Tutorial', 'Comedy', 'Documentary', 'Animation', 'Music Video', 'Gameplay'];
+        return [
+          'Short Film',
+          'Vlog',
+          'Tutorial',
+          'Comedy',
+          'Documentary',
+          'Animation',
+          'Music Video',
+          'Gameplay',
+        ];
       case 'AUDIO':
-        return ['Music', 'Podcast', 'Audiobook', 'Sound Effects', 'Voice Over', 'Instrumental', 'Mix/DJ Set'];
+        return [
+          'Music',
+          'Podcast',
+          'Audiobook',
+          'Sound Effects',
+          'Voice Over',
+          'Instrumental',
+          'Mix/DJ Set',
+        ];
       default:
         return [];
     }
@@ -176,7 +193,7 @@ function CreatePage() {
                     onClick={() => setWaveType(WaveType.PERSONAL)}
                     className={cn(
                       'h-auto flex-col gap-2 p-4 transition-all',
-                      waveType === 'PERSONAL' && 'ring-2 ring-primary bg-primary/5 border-primary'
+                      waveType === 'PERSONAL' && 'ring-2 ring-primary bg-primary/5 border-primary',
                     )}
                   >
                     <User className="h-6 w-6" />
@@ -189,7 +206,7 @@ function CreatePage() {
                     onClick={() => setWaveType(WaveType.COMMUNITY)}
                     className={cn(
                       'h-auto flex-col gap-2 p-4 transition-all',
-                      waveType === 'COMMUNITY' && 'ring-2 ring-primary bg-primary/5 border-primary'
+                      waveType === 'COMMUNITY' && 'ring-2 ring-primary bg-primary/5 border-primary',
                     )}
                   >
                     <Users className="h-6 w-6" />
@@ -211,13 +228,15 @@ function CreatePage() {
                       onClick={() => setMediaType(type)}
                       className={cn(
                         'h-auto flex-col gap-2 p-4 transition-all',
-                        mediaType === type && 'ring-2 ring-primary bg-primary/5 border-primary'
+                        mediaType === type && 'ring-2 ring-primary bg-primary/5 border-primary',
                       )}
                     >
                       {type === 'IMAGE' && <ImageIcon className="h-6 w-6" />}
                       {type === 'VIDEO' && <Video className="h-6 w-6" />}
                       {type === 'AUDIO' && <Music className="h-6 w-6" />}
-                      <p className="font-semibold text-sm">{type.charAt(0) + type.slice(1).toLowerCase()}</p>
+                      <p className="font-semibold text-sm">
+                        {type.charAt(0) + type.slice(1).toLowerCase()}
+                      </p>
                     </Button>
                   ))}
                 </div>
@@ -244,8 +263,8 @@ function CreatePage() {
                       mediaType === 'IMAGE'
                         ? 'image/*'
                         : mediaType === 'VIDEO'
-                        ? 'video/*'
-                        : 'audio/*'
+                          ? 'video/*'
+                          : 'audio/*'
                     }
                     onChange={handleFileSelect}
                     multiple
@@ -364,7 +383,8 @@ function CreatePage() {
                         onClick={() => setPersonalRating(rating)}
                         className={cn(
                           'font-semibold transition-all',
-                          personalRating === rating && 'border-yellow-500 bg-yellow-50 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-700'
+                          personalRating === rating &&
+                            'border-yellow-500 bg-yellow-50 text-yellow-700 hover:bg-yellow-50 hover:text-yellow-700',
                         )}
                       >
                         {rating}
@@ -391,7 +411,8 @@ function CreatePage() {
                       onClick={() => setCommunityRatingScale(5)}
                       className={cn(
                         'font-semibold transition-all',
-                        communityRatingScale === 5 && 'ring-2 ring-primary bg-primary/5 border-primary text-primary'
+                        communityRatingScale === 5 &&
+                          'ring-2 ring-primary bg-primary/5 border-primary text-primary',
                       )}
                     >
                       5-Star Scale
@@ -402,7 +423,8 @@ function CreatePage() {
                       onClick={() => setCommunityRatingScale(10)}
                       className={cn(
                         'font-semibold transition-all',
-                        communityRatingScale === 10 && 'ring-2 ring-primary bg-primary/5 border-primary text-primary'
+                        communityRatingScale === 10 &&
+                          'ring-2 ring-primary bg-primary/5 border-primary text-primary',
                       )}
                     >
                       10-Point Scale

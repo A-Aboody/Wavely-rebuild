@@ -19,7 +19,6 @@ function OAuthCallback() {
       const refreshToken = params.get('refreshToken');
 
       if (accessToken && refreshToken) {
-        // Store tokens first so apiClient can use them
         useAuthStore.setState({
           accessToken,
           refreshToken,
@@ -27,7 +26,6 @@ function OAuthCallback() {
         });
 
         try {
-          // Fetch the full user profile from the API
           const user = await authApi.getCurrentUser();
           setUser(user);
         } catch (error) {

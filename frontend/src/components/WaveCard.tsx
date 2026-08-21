@@ -1,7 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Wave } from '@wavely/shared';
-import { Heart, MessageCircle, Bookmark, Share2, MoreHorizontal, Star, MapPin, Volume2, VolumeX } from 'lucide-react';
+import {
+  Heart,
+  MessageCircle,
+  Bookmark,
+  Share2,
+  MoreHorizontal,
+  Star,
+  MapPin,
+  Volume2,
+  VolumeX,
+} from 'lucide-react';
 import { useLikeWave, useSaveWave, useIncrementView } from '../hooks/useWaves';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuthStore } from '../stores/authStore';
@@ -40,7 +50,8 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
 
     if (inView) {
       videoRef.current.currentTime = 0;
-      videoRef.current.play()
+      videoRef.current
+        .play()
         .then(() => setIsVideoPlaying(true))
         .catch(() => {
           videoRef.current!.muted = true;
@@ -168,9 +179,7 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
                   <AvatarFallback>{userInitials}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-semibold text-white text-sm">
-                    {wave.user.displayName}
-                  </p>
+                  <p className="font-semibold text-white text-sm">{wave.user.displayName}</p>
                   <div className="flex items-center gap-1 text-xs text-gray-300">
                     <span>@{wave.user.username}</span>
                     <span>·</span>
@@ -208,8 +217,7 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
                 <span className="font-semibold">
                   {wave.waveType === 'PERSONAL'
                     ? `${wave.personalRating?.toFixed(1)}/10`
-                    : `${wave.averageRating?.toFixed(1)}/${wave.communityRatingScale}`
-                  }
+                    : `${wave.averageRating?.toFixed(1)}/${wave.communityRatingScale}`}
                 </span>
               </div>
             </div>
@@ -233,16 +241,11 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
 
       {/* Content Section */}
       <CardContent className="p-4">
-        {wave.title && (
-          <h3 className="font-semibold text-lg text-foreground mb-2">{wave.title}</h3>
-        )}
+        {wave.title && <h3 className="font-semibold text-lg text-foreground mb-2">{wave.title}</h3>}
 
         {wave.content && (
           <div className="relative">
-            <p className={cn(
-              'text-muted-foreground',
-              !showFullContent && 'line-clamp-2'
-            )}>
+            <p className={cn('text-muted-foreground', !showFullContent && 'line-clamp-2')}>
               {wave.content}
             </p>
             {wave.content.length > 100 && (
@@ -272,7 +275,7 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
                 'h-9 w-9 transition-colors',
                 wave.isLiked
                   ? 'text-red-500 hover:text-red-600'
-                  : 'text-muted-foreground hover:text-red-500'
+                  : 'text-muted-foreground hover:text-red-500',
               )}
             >
               <Heart
@@ -315,7 +318,7 @@ export const WaveCard = ({ wave, onCommentsClick, onWaveClick }: WaveCardProps) 
               'h-9 w-9 transition-colors',
               wave.isSaved
                 ? 'text-primary hover:text-primary/80'
-                : 'text-muted-foreground hover:text-primary'
+                : 'text-muted-foreground hover:text-primary',
             )}
           >
             <Bookmark

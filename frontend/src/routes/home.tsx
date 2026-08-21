@@ -47,9 +47,10 @@ function HomePage() {
     isLoading: isLoadingFollowing,
   } = useFollowingFeed();
 
-  const waves = feedTab === 'forYou'
-    ? forYouData?.pages.flatMap(page => page.data) || []
-    : followingData?.pages.flatMap(page => page.data) || [];
+  const waves =
+    feedTab === 'forYou'
+      ? forYouData?.pages.flatMap((page) => page.data) || []
+      : followingData?.pages.flatMap((page) => page.data) || [];
 
   const isLoading = feedTab === 'forYou' ? isLoadingForYou : isLoadingFollowing;
   const isFetchingNext = feedTab === 'forYou' ? isFetchingNextForYou : isFetchingNextFollowing;
@@ -76,7 +77,7 @@ function HomePage() {
         const distance = Math.abs(containerMiddle - waveMiddle);
         if (distance < closestDistance) {
           closestDistance = distance;
-          const waveIndex = waves.findIndex(wave => wave.id === id);
+          const waveIndex = waves.findIndex((wave) => wave.id === id);
           if (waveIndex !== -1) {
             closestWaveIndex = waveIndex;
           }
@@ -104,7 +105,17 @@ function HomePage() {
       feedContainer.removeEventListener('scroll', handleScroll);
       resizeObserver.disconnect();
     };
-  }, [waves, visibleWaveIndex, feedTab, hasNextForYou, hasNextFollowing, isFetchingNextForYou, isFetchingNextFollowing, fetchNextForYou, fetchNextFollowing]);
+  }, [
+    waves,
+    visibleWaveIndex,
+    feedTab,
+    hasNextForYou,
+    hasNextFollowing,
+    isFetchingNextForYou,
+    isFetchingNextFollowing,
+    fetchNextForYou,
+    fetchNextFollowing,
+  ]);
 
   const handleCommentsClick = (waveId: string) => {
     setSidebarTab('comments');
@@ -114,24 +125,27 @@ function HomePage() {
       const containerRect = feedContainerRef.current.getBoundingClientRect();
       const waveRect = waveElement.getBoundingClientRect();
       feedContainerRef.current.scrollTo({
-        top: feedContainerRef.current.scrollTop + (waveRect.top - containerRect.top) -
-             (containerRect.height - waveRect.height) / 2,
-        behavior: 'smooth'
+        top:
+          feedContainerRef.current.scrollTop +
+          (waveRect.top - containerRect.top) -
+          (containerRect.height - waveRect.height) / 2,
+        behavior: 'smooth',
       });
     }
   };
 
-  const selectedWave = waves.find(wave => wave.id === selectedWaveId);
+  const selectedWave = waves.find((wave) => wave.id === selectedWaveId);
 
   const userInitials = (user?.displayName || user?.username || 'U')
     .split(' ')
-    .map(part => part[0])
+    .map((part) => part[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
 
   const getAvatarUrl = (name: string, profileImage?: string | null) =>
-    profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff`;
+    profileImage ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff`;
 
   return (
     <div className="min-h-screen bg-muted">
@@ -145,7 +159,10 @@ function HomePage() {
                   <div className="flex items-center space-x-3 mb-4">
                     <Avatar className="h-12 w-12">
                       <AvatarImage
-                        src={getAvatarUrl(user?.displayName || user?.username || 'User', user?.profileImage)}
+                        src={getAvatarUrl(
+                          user?.displayName || user?.username || 'User',
+                          user?.profileImage,
+                        )}
                         alt={user?.displayName}
                         className="object-cover"
                       />
@@ -192,7 +209,10 @@ function HomePage() {
           {/* Main Feed */}
           <div className="lg:col-span-5">
             <div className="mb-6 sticky top-8 z-10">
-              <Tabs value={feedTab} onValueChange={(value) => setFeedTab(value as 'forYou' | 'following')}>
+              <Tabs
+                value={feedTab}
+                onValueChange={(value) => setFeedTab(value as 'forYou' | 'following')}
+              >
                 <Card>
                   <TabsList className="w-full rounded-lg h-auto p-0 bg-background">
                     <TabsTrigger
@@ -247,7 +267,7 @@ function HomePage() {
               ) : (
                 <div className="space-y-6">
                   {waves.map((wave) => (
-                    <div key={wave.id} ref={el => waveRefs.current[wave.id] = el}>
+                    <div key={wave.id} ref={(el) => (waveRefs.current[wave.id] = el)}>
                       <WaveCard wave={wave} onCommentsClick={handleCommentsClick} />
                     </div>
                   ))}
@@ -265,7 +285,10 @@ function HomePage() {
           <aside className="hidden lg:block lg:col-span-4">
             <div className="sticky top-8">
               <Card className="overflow-hidden" style={{ height: 'calc(100vh - 120px)' }}>
-                <Tabs value={sidebarTab} onValueChange={(value) => setSidebarTab(value as 'info' | 'comments')}>
+                <Tabs
+                  value={sidebarTab}
+                  onValueChange={(value) => setSidebarTab(value as 'info' | 'comments')}
+                >
                   <TabsList className="w-full rounded-none h-auto p-0 bg-background">
                     <TabsTrigger
                       value="info"
@@ -288,13 +311,22 @@ function HomePage() {
                   </TabsList>
                   <Separator />
 
-                  <div className="overflow-y-auto scrollbar-hide" style={{ height: 'calc(100% - 57px)' }}>
+                  <div
+                    className="overflow-y-auto scrollbar-hide"
+                    style={{ height: 'calc(100% - 57px)' }}
+                  >
                     <TabsContent value="info" className="mt-0">
                       <div className="p-6 space-y-4">
-                        <h3 className="font-semibold text-foreground text-lg mb-4">Top Rated Waves</h3>
+                        <h3 className="font-semibold text-foreground text-lg mb-4">
+                          Top Rated Waves
+                        </h3>
                         {waves
-                          .filter(wave => wave.averageRating || wave.personalRating)
-                          .sort((a, b) => (b.averageRating || b.personalRating || 0) - (a.averageRating || a.personalRating || 0))
+                          .filter((wave) => wave.averageRating || wave.personalRating)
+                          .sort(
+                            (a, b) =>
+                              (b.averageRating || b.personalRating || 0) -
+                              (a.averageRating || a.personalRating || 0),
+                          )
                           .slice(0, 5)
                           .map((wave) => (
                             <Link
@@ -316,7 +348,9 @@ function HomePage() {
                                 </p>
                                 <div className="flex items-center gap-1 text-sm mt-1">
                                   <Star size={14} className="text-yellow-500" fill="currentColor" />
-                                  <span className="font-medium">{(wave.averageRating || wave.personalRating)?.toFixed(1)}</span>
+                                  <span className="font-medium">
+                                    {(wave.averageRating || wave.personalRating)?.toFixed(1)}
+                                  </span>
                                 </div>
                                 {wave.category && (
                                   <Badge variant="secondary" className="mt-2">
@@ -326,7 +360,7 @@ function HomePage() {
                               </div>
                             </Link>
                           ))}
-                        {waves.filter(w => w.averageRating || w.personalRating).length === 0 && (
+                        {waves.filter((w) => w.averageRating || w.personalRating).length === 0 && (
                           <p className="text-sm text-muted-foreground text-center py-8">
                             No rated waves yet
                           </p>
@@ -341,14 +375,17 @@ function HomePage() {
                             <div className="flex items-center gap-3 mb-4 pb-4">
                               <Avatar className="h-10 w-10 flex-shrink-0">
                                 <AvatarImage
-                                  src={getAvatarUrl(selectedWave.user.displayName, selectedWave.user.profileImage)}
+                                  src={getAvatarUrl(
+                                    selectedWave.user.displayName,
+                                    selectedWave.user.profileImage,
+                                  )}
                                   alt={selectedWave.user.displayName}
                                   className="object-cover"
                                 />
                                 <AvatarFallback>
                                   {selectedWave.user.displayName
                                     .split(' ')
-                                    .map(part => part[0])
+                                    .map((part) => part[0])
                                     .join('')
                                     .toUpperCase()
                                     .slice(0, 2)}
@@ -371,7 +408,10 @@ function HomePage() {
                         ) : (
                           <div className="flex items-center justify-center h-full text-muted-foreground">
                             <div className="text-center">
-                              <MessageCircle size={48} className="mx-auto mb-2 text-muted-foreground/40" />
+                              <MessageCircle
+                                size={48}
+                                className="mx-auto mb-2 text-muted-foreground/40"
+                              />
                               <p className="text-sm">No wave selected</p>
                             </div>
                           </div>
