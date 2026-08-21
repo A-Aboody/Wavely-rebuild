@@ -82,4 +82,4 @@ for (const pkg of targets) {
 console.log(
   '\nEnvironment ready. Optional services (S3, Google OAuth, SMTP) still hold placeholders —',
 );
-console.log('see SETUP.md. Everything else runs without them.');
+console.log('see README.md. Everything else runs without them.');
