@@ -5,23 +5,15 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  Comment,
-  CreateCommentDto,
-  UpdateCommentDto,
-} from '../types';
+import type { Comment, CreateCommentDto, UpdateCommentDto } from '@wavely/shared';
 
 @Injectable()
 export class CommentsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(
-    createCommentDto: CreateCommentDto,
-    userId: string,
-  ): Promise<Comment> {
+  async create(createCommentDto: CreateCommentDto, userId: string): Promise<Comment> {
     const { waveId, content, parentCommentId } = createCommentDto;
 
-    // Verify wave exists
     const wave = await this.prisma.wave.findUnique({
       where: { id: waveId },
     });
@@ -30,7 +22,6 @@ export class CommentsService {
       throw new NotFoundException('Wave not found');
     }
 
-    // If replying to a comment, verify it exists
     if (parentCommentId) {
       const parentComment = await this.prisma.comment.findUnique({
         where: { id: parentCommentId },
@@ -41,48 +32,44 @@ export class CommentsService {
       }
     }
 
-    const comment = await this.prisma.comment.create({
-      data: {
-        content,
-        userId,
-        waveId,
-        parentCommentId,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true,
-            profileImage: true,
+    const comment = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.comment.create({
+        data: {
+          content,
+          userId,
+          waveId,
+          parentCommentId,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              profileImage: true,
+            },
+          },
+          _count: {
+            select: {
+              likes: true,
+              replies: true,
+            },
           },
         },
-        _count: {
-          select: {
-            likes: true,
-            replies: true,
-          },
-        },
-      },
-    });
+      });
 
-    // Increment comments count on wave
-    await this.prisma.wave.update({
-      where: { id: waveId },
-      data: {
-        commentsCount: {
-          increment: 1,
-        },
-      },
+      await tx.wave.update({
+        where: { id: waveId },
+        data: { commentsCount: { increment: 1 } },
+      });
+
+      return created;
     });
 
     return this.transformComment(comment);
   }
 
-  async findByWave(
-    waveId: string,
-    userId?: string,
-  ): Promise<Comment[]> {
+  async findByWave(waveId: string, userId?: string): Promise<Comment[]> {
     const comments = await this.prisma.comment.findMany({
       where: {
         waveId,
@@ -138,11 +125,7 @@ export class CommentsService {
     return comments.map((comment) => this.transformComment(comment, userId));
   }
 
-  async update(
-    id: string,
-    updateCommentDto: UpdateCommentDto,
-    userId: string,
-  ): Promise<Comment> {
+  async update(id: string, updateCommentDto: UpdateCommentDto, userId: string): Promise<Comment> {
     const comment = await this.prisma.comment.findUnique({
       where: { id },
     });
@@ -193,31 +176,22 @@ export class CommentsService {
       throw new NotFoundException('Comment not found');
     }
 
-    // Only comment owner or wave owner can delete
     if (comment.userId !== userId && comment.wave.userId !== userId) {
       throw new ForbiddenException('You cannot delete this comment');
     }
 
-    // Delete comment and its replies (cascade)
-    await this.prisma.comment.delete({
-      where: { id },
-    });
+    await this.prisma.$transaction(async (tx) => {
+      await tx.comment.delete({ where: { id } });
 
-    // Decrement comments count on wave
-    await this.prisma.wave.update({
-      where: { id: comment.waveId },
-      data: {
-        commentsCount: {
-          decrement: 1,
-        },
-      },
+      const remaining = await tx.comment.count({ where: { waveId: comment.waveId } });
+      await tx.wave.update({
+        where: { id: comment.waveId },
+        data: { commentsCount: remaining },
+      });
     });
   }
 
-  async toggleLike(
-    id: string,
-    userId: string,
-  ): Promise<{ liked: boolean }> {
+  async toggleLike(id: string, userId: string): Promise<{ liked: boolean }> {
     const comment = await this.prisma.comment.findUnique({
       where: { id },
     });
@@ -236,7 +210,6 @@ export class CommentsService {
     });
 
     if (existingLike) {
-      // Unlike
       await this.prisma.commentLike.delete({
         where: {
           userId_commentId: {
@@ -248,7 +221,6 @@ export class CommentsService {
 
       return { liked: false };
     } else {
-      // Like
       await this.prisma.commentLike.create({
         data: {
           userId,

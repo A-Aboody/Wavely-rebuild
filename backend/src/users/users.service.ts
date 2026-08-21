@@ -5,7 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserProfile, UpdateUserDto, UserStats } from '../types';
+import type { UserProfile, UpdateUserDto, UserStats } from '@wavely/shared';
 
 @Injectable()
 export class UsersService {
@@ -64,13 +64,9 @@ export class UsersService {
     };
   }
 
-  async updateProfile(
-    userId: string,
-    updateUserDto: UpdateUserDto,
-  ): Promise<UserProfile> {
+  async updateProfile(userId: string, updateUserDto: UpdateUserDto): Promise<UserProfile> {
     const { username, displayName, bio, profileImage, bannerImage } = updateUserDto;
 
-    // Check if username is being changed and if it's already taken
     if (username) {
       const existingUser = await this.prisma.user.findUnique({
         where: { username },
@@ -147,7 +143,6 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // Get total views on user's waves
     const viewsResult = await this.prisma.wave.aggregate({
       where: { userId },
       _sum: {
@@ -155,7 +150,6 @@ export class UsersService {
       },
     });
 
-    // Get average rating for personal waves
     const ratingResult = await this.prisma.wave.aggregate({
       where: {
         userId,
@@ -179,15 +173,11 @@ export class UsersService {
     };
   }
 
-  async follow(
-    followerId: string,
-    followingId: string,
-  ): Promise<{ following: boolean }> {
+  async follow(followerId: string, followingId: string): Promise<{ following: boolean }> {
     if (followerId === followingId) {
       throw new ForbiddenException('You cannot follow yourself');
     }
 
-    // Check if target user exists
     const targetUser = await this.prisma.user.findUnique({
       where: { id: followingId },
     });
@@ -206,7 +196,6 @@ export class UsersService {
     });
 
     if (existingFollow) {
-      // Unfollow
       await this.prisma.follow.delete({
         where: {
           followerId_followingId: {
@@ -218,7 +207,6 @@ export class UsersService {
 
       return { following: false };
     } else {
-      // Follow
       await this.prisma.follow.create({
         data: {
           followerId,

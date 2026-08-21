@@ -14,11 +14,7 @@ import {
 import { CommentsService } from './comments.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Public } from '../auth/decorators/public.decorator';
-import {
-  Comment,
-  CreateCommentDto,
-  UpdateCommentDto,
-} from '../types';
+import type { Comment, CreateCommentDto, UpdateCommentDto } from '@wavely/shared';
 import { Request } from 'express';
 
 @Controller('comments')
@@ -28,20 +24,14 @@ export class CommentsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(
-    @Body() createCommentDto: CreateCommentDto,
-    @Req() req: Request,
-  ): Promise<Comment> {
+  async create(@Body() createCommentDto: CreateCommentDto, @Req() req: Request): Promise<Comment> {
     const userId = req.user['sub'];
     return this.commentsService.create(createCommentDto, userId);
   }
 
   @Get('wave/:waveId')
   @Public()
-  async findByWave(
-    @Param('waveId') waveId: string,
-    @Req() req: Request,
-  ): Promise<Comment[]> {
+  async findByWave(@Param('waveId') waveId: string, @Req() req: Request): Promise<Comment[]> {
     const userId = req.user?.['sub'];
     return this.commentsService.findByWave(waveId, userId);
   }
@@ -65,10 +55,7 @@ export class CommentsController {
 
   @Post(':id/like')
   @HttpCode(HttpStatus.OK)
-  async like(
-    @Param('id') id: string,
-    @Req() req: Request,
-  ): Promise<{ liked: boolean }> {
+  async like(@Param('id') id: string, @Req() req: Request): Promise<{ liked: boolean }> {
     const userId = req.user['sub'];
     return this.commentsService.toggleLike(id, userId);
   }

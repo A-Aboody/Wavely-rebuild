@@ -1,6 +1,6 @@
 // Shared types between frontend and backend
 
-// ============ USER TYPES ============
+// User types
 export interface User {
   id: string;
   email: string;
@@ -12,19 +12,28 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   lastLogin?: string;
-  
+
   // Stats (computed)
   followersCount?: number;
   followingCount?: number;
   wavesCount?: number;
 }
 
-export interface UserProfile extends User {
-  followers?: Follow[];
-  following?: Follow[];
-  isFollowing?: boolean; // From perspective of current user
-  isOwnProfile?: boolean; // Whether this is the current user's profile
-  likesCount?: number;
+// Public profile shape. Deliberately excludes email: this is served by a public endpoint.
+export interface UserProfile {
+  id: string;
+  username: string;
+  displayName: string;
+  bio?: string;
+  profileImage?: string;
+  bannerImage?: string;
+  wavesCount: number;
+  followersCount: number;
+  followingCount: number;
+  likesCount: number;
+  isFollowing: boolean;
+  isOwnProfile: boolean;
+  createdAt: string;
 }
 
 export interface UpdateUserDto {
@@ -35,7 +44,7 @@ export interface UpdateUserDto {
   bannerImage?: string;
 }
 
-// ============ AUTH TYPES ============
+// Auth types
 export interface LoginDto {
   email: string;
   password: string;
@@ -54,16 +63,16 @@ export interface AuthResponse {
   refreshToken: string;
 }
 
-// ============ WAVE TYPES ============
+// Wave types
 export enum WaveType {
   PERSONAL = 'PERSONAL',
-  COMMUNITY = 'COMMUNITY'
+  COMMUNITY = 'COMMUNITY',
 }
 
 export enum MediaType {
   IMAGE = 'IMAGE',
   VIDEO = 'VIDEO',
-  AUDIO = 'AUDIO'
+  AUDIO = 'AUDIO',
 }
 
 export interface Wave {
@@ -85,8 +94,7 @@ export interface Wave {
   viewsCount: number;
   createdAt: string;
   updatedAt: string;
-  
-  // Relations
+
   userId: string;
   user: {
     id: string;
@@ -94,7 +102,7 @@ export interface Wave {
     displayName: string;
     profileImage?: string;
   };
-  
+
   // Current user's interaction state
   isLiked?: boolean;
   isSaved?: boolean;
@@ -121,7 +129,7 @@ export interface UpdateWaveDto {
   location?: string;
 }
 
-// ============ COMMENT TYPES ============
+// Comment types
 export interface Comment {
   id: string;
   content: string;
@@ -132,8 +140,7 @@ export interface Comment {
   parentCommentId?: string;
   likesCount: number;
   repliesCount?: number;
-  
-  // Relations
+
   user: {
     id: string;
     username: string;
@@ -141,8 +148,7 @@ export interface Comment {
     profileImage?: string;
   };
   replies?: Comment[];
-  
-  // Current user's interaction
+
   isLiked?: boolean;
 }
 
@@ -156,7 +162,7 @@ export interface UpdateCommentDto {
   content: string;
 }
 
-// ============ RATING TYPES ============
+// Rating types
 export interface Rating {
   id: string;
   rating: number;
@@ -175,7 +181,7 @@ export interface UpdateRatingDto {
   rating: number;
 }
 
-// ============ FOLLOW TYPES ============
+// Follow types
 export interface Follow {
   id: string;
   followerId: string;
@@ -183,13 +189,13 @@ export interface Follow {
   createdAt: string;
 }
 
-// ============ NOTIFICATION TYPES ============
+// Notification types
 export enum NotificationType {
   LIKE = 'LIKE',
   COMMENT = 'COMMENT',
   FOLLOW = 'FOLLOW',
   RATING = 'RATING',
-  MENTION = 'MENTION'
+  MENTION = 'MENTION',
 }
 
 export interface Notification {
@@ -203,7 +209,7 @@ export interface Notification {
   userId: string;
 }
 
-// ============ FEED & PAGINATION TYPES ============
+// Feed & Pagination types
 export interface PaginationParams {
   page?: number;
   limit?: number;
@@ -237,7 +243,7 @@ export interface FeedParams extends PaginationParams {
   following?: boolean;
 }
 
-// ============ SEARCH TYPES ============
+// Search types
 export interface SearchParams {
   query: string;
   type?: 'waves' | 'users' | 'all';
@@ -250,7 +256,7 @@ export interface SearchResults {
   users: User[];
 }
 
-// ============ UPLOAD TYPES ============
+// Upload types
 export interface UploadResponse {
   url: string;
   key: string;
@@ -263,14 +269,14 @@ export interface GenerateUploadUrlDto {
   mediaType: MediaType;
 }
 
-// ============ WEBSOCKET TYPES ============
+// Websocket types
 export enum WebSocketEvent {
   NOTIFICATION = 'notification',
   WAVE_LIKED = 'wave:liked',
   WAVE_COMMENTED = 'wave:commented',
   WAVE_RATED = 'wave:rated',
   USER_FOLLOWED = 'user:followed',
-  ONLINE_STATUS = 'online:status'
+  ONLINE_STATUS = 'online:status',
 }
 
 export interface WebSocketMessage<T = any> {
@@ -278,7 +284,7 @@ export interface WebSocketMessage<T = any> {
   data: T;
 }
 
-// ============ ERROR TYPES ============
+// Error types
 export interface ApiError {
   statusCode: number;
   message: string;
@@ -287,7 +293,7 @@ export interface ApiError {
   path: string;
 }
 
-// ============ STATISTICS TYPES ============
+// Statistics types
 export interface UserStats {
   wavesCount: number;
   followersCount: number;

@@ -11,7 +11,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto, AuthResponse } from '../types';
+import type { LoginDto, RegisterDto, AuthResponse } from '@wavely/shared';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
@@ -60,10 +60,7 @@ export class AuthController {
   @Post('verify-email')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async verifyEmail(
-    @Body('code') code: string,
-    @Req() req: Request,
-  ): Promise<{ message: string }> {
+  async verifyEmail(@Body('code') code: string, @Req() req: Request): Promise<{ message: string }> {
     const userId = req.user['sub'];
     return this.authService.verifyEmail(code, userId);
   }
@@ -93,9 +90,7 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleAuthGuard)
-  async googleAuth() {
-    // Guard redirects to Google
-  }
+  async googleAuth() {}
 
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)

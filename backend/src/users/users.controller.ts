@@ -14,7 +14,7 @@ import {
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Public } from '../auth/decorators/public.decorator';
-import { UserProfile, UpdateUserDto, UserStats } from '../types';
+import type { UserProfile, UpdateUserDto, UserStats } from '@wavely/shared';
 import { Request } from 'express';
 
 @Controller('users')
@@ -24,19 +24,13 @@ export class UsersController {
 
   @Get('search')
   @Public()
-  async search(
-    @Query('q') query: string,
-    @Query('limit') limit: number = 20,
-  ) {
+  async search(@Query('q') query: string, @Query('limit') limit: number = 20) {
     return this.usersService.searchUsers(query, limit);
   }
 
   @Get(':username')
   @Public()
-  async getProfile(
-    @Param('username') username: string,
-    @Req() req: Request,
-  ): Promise<UserProfile> {
+  async getProfile(@Param('username') username: string, @Req() req: Request): Promise<UserProfile> {
     const currentUserId = req.user?.['sub'];
     return this.usersService.getProfile(username, currentUserId);
   }
@@ -68,19 +62,13 @@ export class UsersController {
 
   @Get(':username/followers')
   @Public()
-  async getFollowers(
-    @Param('username') username: string,
-    @Query('limit') limit: number = 20,
-  ) {
+  async getFollowers(@Param('username') username: string, @Query('limit') limit: number = 20) {
     return this.usersService.getFollowers(username, limit);
   }
 
   @Get(':username/following')
   @Public()
-  async getFollowing(
-    @Param('username') username: string,
-    @Query('limit') limit: number = 20,
-  ) {
+  async getFollowing(@Param('username') username: string, @Query('limit') limit: number = 20) {
     return this.usersService.getFollowing(username, limit);
   }
 }

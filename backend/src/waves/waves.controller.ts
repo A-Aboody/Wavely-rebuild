@@ -15,13 +15,13 @@ import {
 import { WavesService } from './waves.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Public } from '../auth/decorators/public.decorator';
-import {
+import type {
   CreateWaveDto,
   UpdateWaveDto,
   FeedParams,
   Wave,
   CursorPaginatedResponse,
-} from '../types';
+} from '@wavely/shared';
 import { Request } from 'express';
 
 @Controller('waves')
@@ -31,10 +31,7 @@ export class WavesController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(
-    @Body() createWaveDto: CreateWaveDto,
-    @Req() req: Request,
-  ): Promise<Wave> {
+  async create(@Body() createWaveDto: CreateWaveDto, @Req() req: Request): Promise<Wave> {
     const userId = req.user['sub'];
     return this.wavesService.create(createWaveDto, userId);
   }
@@ -45,7 +42,6 @@ export class WavesController {
     @Query() params: FeedParams,
     @Req() req: Request,
   ): Promise<CursorPaginatedResponse<Wave>> {
-    // Get userId if authenticated
     const userId = req.user?.['sub'];
     return this.wavesService.getFeed(params, userId);
   }
@@ -61,20 +57,14 @@ export class WavesController {
 
   @Get('trending')
   @Public()
-  async getTrending(
-    @Query('limit') limit: number = 10,
-    @Req() req: Request,
-  ): Promise<Wave[]> {
+  async getTrending(@Query('limit') limit: number = 10, @Req() req: Request): Promise<Wave[]> {
     const userId = req.user?.['sub'];
     return this.wavesService.getTrending(limit, userId);
   }
 
   @Get('top-rated')
   @Public()
-  async getTopRated(
-    @Query('limit') limit: number = 10,
-    @Req() req: Request,
-  ): Promise<Wave[]> {
+  async getTopRated(@Query('limit') limit: number = 10, @Req() req: Request): Promise<Wave[]> {
     const userId = req.user?.['sub'];
     return this.wavesService.getTopRated(limit, userId);
   }
@@ -114,10 +104,7 @@ export class WavesController {
 
   @Get(':id')
   @Public()
-  async findOne(
-    @Param('id') id: string,
-    @Req() req: Request,
-  ): Promise<Wave> {
+  async findOne(@Param('id') id: string, @Req() req: Request): Promise<Wave> {
     const userId = req.user?.['sub'];
     return this.wavesService.findOne(id, userId);
   }
@@ -160,10 +147,7 @@ export class WavesController {
   }
 
   @Get(':id/saved-by')
-  async getSavedBy(
-    @Param('id') id: string,
-    @Query('limit') limit: number = 20,
-  ) {
+  async getSavedBy(@Param('id') id: string, @Query('limit') limit: number = 20) {
     return this.wavesService.getSavedBy(id, limit);
   }
 }

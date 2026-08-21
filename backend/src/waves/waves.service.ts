@@ -5,23 +5,25 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import {
+import type {
   CreateWaveDto,
   UpdateWaveDto,
   FeedParams,
   Wave,
   CursorPaginatedResponse,
-  WaveType,
-} from '../types';
+} from '@wavely/shared';
+import { WaveType } from '@prisma/client';
 
 @Injectable()
 export class WavesService {
   constructor(private prisma: PrismaService) {}
 
   async create(createWaveDto: CreateWaveDto, userId: string): Promise<Wave> {
-    // Validate community wave
     if (createWaveDto.waveType === WaveType.COMMUNITY) {
-      if (!createWaveDto.communityRatingScale || ![5, 10].includes(createWaveDto.communityRatingScale)) {
+      if (
+        !createWaveDto.communityRatingScale ||
+        ![5, 10].includes(createWaveDto.communityRatingScale)
+      ) {
         throw new BadRequestException('Community waves must have a rating scale of 5 or 10');
       }
       if (createWaveDto.personalRating) {
@@ -29,7 +31,6 @@ export class WavesService {
       }
     }
 
-    // Validate personal wave
     if (createWaveDto.waveType === WaveType.PERSONAL) {
       if (createWaveDto.personalRating !== undefined && createWaveDto.personalRating !== null) {
         if (createWaveDto.personalRating < 1 || createWaveDto.personalRating > 10) {
@@ -120,7 +121,6 @@ export class WavesService {
     const limit = Math.min(params.limit || 20, 50);
     const cursor = params.cursor;
 
-    // Get following user IDs
     const following = await this.prisma.follow.findMany({
       where: { followerId: userId },
       select: { followingId: true },
@@ -156,9 +156,7 @@ export class WavesService {
     const results = hasMore ? waves.slice(0, -1) : waves;
     const nextCursor = hasMore ? results[results.length - 1].id : undefined;
 
-    const formattedWaves = await Promise.all(
-      results.map((wave) => this.formatWave(wave, userId)),
-    );
+    const formattedWaves = await Promise.all(results.map((wave) => this.formatWave(wave, userId)));
 
     return {
       data: formattedWaves,
@@ -225,7 +223,6 @@ export class WavesService {
   }
 
   async getTrending(limit: number, currentUserId?: string): Promise<Wave[]> {
-    // Get waves from the last 7 days, sorted by engagement
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -234,11 +231,7 @@ export class WavesService {
         createdAt: { gte: sevenDaysAgo },
       },
       take: limit,
-      orderBy: [
-        { likesCount: 'desc' },
-        { commentsCount: 'desc' },
-        { viewsCount: 'desc' },
-      ],
+      orderBy: [{ likesCount: 'desc' }, { commentsCount: 'desc' }, { viewsCount: 'desc' }],
       include: {
         user: {
           select: {
@@ -251,18 +244,13 @@ export class WavesService {
       },
     });
 
-    return Promise.all(
-      waves.map((wave) => this.formatWave(wave, currentUserId)),
-    );
+    return Promise.all(waves.map((wave) => this.formatWave(wave, currentUserId)));
   }
 
   async getTopRated(limit: number, currentUserId?: string): Promise<Wave[]> {
     const waves = await this.prisma.wave.findMany({
       where: {
-        OR: [
-          { personalRating: { not: null } },
-          { averageRating: { not: null } },
-        ],
+        OR: [{ personalRating: { not: null } }, { averageRating: { not: null } }],
       },
       take: limit,
       orderBy: [
@@ -281,9 +269,7 @@ export class WavesService {
       },
     });
 
-    return Promise.all(
-      waves.map((wave) => this.formatWave(wave, currentUserId)),
-    );
+    return Promise.all(waves.map((wave) => this.formatWave(wave, currentUserId)));
   }
 
   async findOne(id: string, currentUserId?: string): Promise<Wave> {
@@ -308,11 +294,7 @@ export class WavesService {
     return this.formatWave(wave, currentUserId);
   }
 
-  async update(
-    id: string,
-    updateWaveDto: UpdateWaveDto,
-    userId: string,
-  ): Promise<Wave> {
+  async update(id: string, updateWaveDto: UpdateWaveDto, userId: string): Promise<Wave> {
     const wave = await this.prisma.wave.findUnique({ where: { id } });
 
     if (!wave) {
@@ -355,16 +337,12 @@ export class WavesService {
     await this.prisma.wave.delete({ where: { id } });
   }
 
-  async toggleLike(
-    waveId: string,
-    userId: string,
-  ): Promise<{ liked: boolean }> {
+  async toggleLike(waveId: string, userId: string): Promise<{ liked: boolean }> {
     const existingLike = await this.prisma.like.findUnique({
       where: { userId_waveId: { userId, waveId } },
     });
 
     if (existingLike) {
-      // Unlike
       await this.prisma.$transaction([
         this.prisma.like.delete({
           where: { id: existingLike.id },
@@ -376,7 +354,6 @@ export class WavesService {
       ]);
       return { liked: false };
     } else {
-      // Like
       await this.prisma.$transaction([
         this.prisma.like.create({
           data: { userId, waveId },
@@ -390,16 +367,12 @@ export class WavesService {
     }
   }
 
-  async toggleSave(
-    waveId: string,
-    userId: string,
-  ): Promise<{ saved: boolean }> {
+  async toggleSave(waveId: string, userId: string): Promise<{ saved: boolean }> {
     const existingSave = await this.prisma.save.findUnique({
       where: { userId_waveId: { userId, waveId } },
     });
 
     if (existingSave) {
-      // Unsave
       await this.prisma.$transaction([
         this.prisma.save.delete({
           where: { id: existingSave.id },
@@ -411,7 +384,6 @@ export class WavesService {
       ]);
       return { saved: false };
     } else {
-      // Save
       await this.prisma.$transaction([
         this.prisma.save.create({
           data: { userId, waveId },
