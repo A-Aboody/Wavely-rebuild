@@ -13,7 +13,6 @@ build/
 .env.production.local
 
 # Prisma
-prisma/migrations/**/*.sql
 prisma/dev.db
 prisma/dev.db-journal
 
