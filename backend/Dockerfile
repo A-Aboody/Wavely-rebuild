@@ -1,27 +1,19 @@
-# Backend Dockerfile for Wavely
-FROM node:18-alpine
+# Build from the repo root: docker build -f backend/Dockerfile -t wavely-backend .
+FROM node:22-alpine
 
-# Install required packages
 RUN apk add --no-cache openssl
-
-# Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY prisma ./prisma/
+# shared/ is a file: dependency of backend/package.json, so it must exist before npm ci
+COPY shared/ ./shared/
+COPY backend/package*.json ./backend/
+COPY backend/prisma ./backend/prisma/
 
-# Install dependencies
+WORKDIR /app/backend
 RUN npm ci
-
-# Copy application code
-COPY . .
-
-# Generate Prisma Client
 RUN npx prisma generate
 
-# Expose port
-EXPOSE 3001
+COPY backend/ ./
 
-# Start command (will be overridden in docker-compose for dev)
+EXPOSE 3001
 CMD ["npm", "run", "start:dev"]

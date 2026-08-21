@@ -1,48 +1,41 @@
-# Production Dockerfile for Wavely Backend
-FROM node:18-alpine AS builder
+# Build from the repo root: docker build -f backend/Dockerfile.prod -t wavely-backend .
+FROM node:22-alpine AS builder
 
-# Install required packages
 RUN apk add --no-cache openssl
-
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY prisma ./prisma/
+COPY shared/ ./shared/
+COPY backend/package*.json ./backend/
+COPY backend/prisma ./backend/prisma/
 
-# Install dependencies
+WORKDIR /app/backend
 RUN npm ci
-
-# Copy source code
-COPY . .
-
-# Generate Prisma Client
 RUN npx prisma generate
 
-# Build the application
+COPY backend/ ./
 RUN npm run build
 
-# Production stage
-FROM node:18-alpine
+FROM node:22-alpine
 
 RUN apk add --no-cache openssl
-
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY prisma ./prisma/
+COPY shared/ ./shared/
+COPY backend/package*.json ./backend/
+COPY backend/prisma ./backend/prisma/
 
-# Install production dependencies only
-RUN npm ci --only=production
+WORKDIR /app/backend
+# npm installs the prisma CLI as an optional peer of @prisma/client; it is build-time only.
+# Clean cache in the same layer, or it ships inside the image.
+RUN npm ci --omit=dev --no-audit --no-fund \
+    && npm cache clean --force \
+    && rm -rf node_modules/prisma node_modules/.bin/prisma \
+        node_modules/@prisma/engines node_modules/@prisma/fetch-engine \
+        node_modules/@prisma/get-platform
 
-# Copy built application from builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-
-# Generate Prisma Client
-RUN npx prisma generate
+# Take the generated client from the builder; the Prisma CLI and its engines stay out of runtime
+COPY --from=builder /app/backend/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/backend/dist ./dist
 
 EXPOSE 3001
-
 CMD ["npm", "run", "start:prod"]
